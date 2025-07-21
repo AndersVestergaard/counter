@@ -11,6 +11,8 @@
     "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
+    "@types/luxon": "^3.6.2",
+    "luxon": "^3.7.1",
     "node": "^20.19.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
