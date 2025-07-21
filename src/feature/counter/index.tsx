@@ -6,7 +6,6 @@ export function Counter() {
   const [sumStr, setSumStr] = useLocalStorage({ key: 'sum', defaultValue: '0' })
   const invested = 200_000
   const increment = (invested * 0.07) / 365 / 24 / 60 / 60 / timesPerSecond
-  const sum = parseFloat(sumStr || '0')
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -18,7 +17,7 @@ export function Counter() {
 
   return (
     <div className={classes.container}>
-      <div className={classes.numberDisplay}>{sum}</div>
+      <div className={classes.numberDisplay}>{sumStr}</div>
     </div>
   )
 }
