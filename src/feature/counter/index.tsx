@@ -6,11 +6,12 @@ import { useLocalStorage } from '../../components/hooks/use-local-storage'
 export function Counter() {
   const [sumStr, setSumStr] = useLocalStorage({ key: 'sum', defaultValue: '0' })
   const invested = 200_000
-  const increment = (invested * 0.07) / 365 / 24 / 60 / 60 / timesPerSecond
+  const incrementPerSecond = (invested * 0.07) / 365 / 24 / 60 / 60
+  const increment = incrementPerSecond / timesPerSecond
 
   React.useEffect(() => {
     const secSinceStart = calculateSecondsSinceNoonWhenStart()
-    setSumStr((increment * secSinceStart).toFixed(10))
+    setSumStr((incrementPerSecond * secSinceStart).toFixed(10))
   }, [])
 
   React.useEffect(() => {
