@@ -198,7 +198,7 @@ class SmartOptimizer:
             neighbor_params = self.random_neighbor(current_params, iteration=iteration)
             
             # Show minimal progress - just iteration number
-            print(f"\r{iteration+1:,}/{max_iterations:,}", end="", flush=True)
+            print(f"\r{iteration+1:,}/{max_iterations}", end="", flush=True)
             
             # Evaluate neighbor
             neighbor_roi = self.evaluate_parameters(neighbor_params)
