@@ -1,0 +1,109 @@
+{
+  "bets": [
+    "00000121102",
+    "00000121012",
+    "00000111102",
+    "00000121101",
+    "00000221102",
+    "00000220102",
+    "00000210012",
+    "00010210102",
+    "00000210102",
+    "00000110102",
+    "00000120101",
+    "00001120102",
+    "00000120102",
+    "00020221102",
+    "00020220102",
+    "00021121102",
+    "00010121002",
+    "00000121002",
+    "00020121002",
+    "20000121102",
+    "10020221102",
+    "00020121102",
+    "00020121012",
+    "00011121002",
+    "00012121102",
+    "00010221102",
+    "00010120002",
+    "02010121202",
+    "10010121102",
+    "11010121102",
+    "00120121102",
+    "00110121102",
+    "01000121101",
+    "01000121102",
+    "01020121102",
+    "01020111102",
+    "01010021102",
+    "01010121102",
+    "01010120102",
+    "01010220102",
+    "01010211101",
+    "11020121102",
+    "10020121102",
+    "00011121102",
+    "00010121102",
+    "11000221102",
+    "11010221102",
+    "01020221102",
+    "01010221102"
+  ],
+  "matches": [],
+  "teams": [
+    {
+      "1": "Holland-Tyrkiet - Kampvinder (1=Holland X=Uafgjort 2=Tyrkiet)",
+      "2": "Holland-Tyrkiet - Kampvinder (1=Holland X=Uafgjort 2=Tyrkiet)"
+    },
+    {
+      "1": "Holland-Tyrkiet - 1.halvleg (1=Holland X=Uafgjort 2=Tyrkiet)",
+      "2": "Holland-Tyrkiet - 1.halvleg (1=Holland X=Uafgjort 2=Tyrkiet)"
+    },
+    {
+      "1": "Holland-Tyrkiet - Antal mål i kampen (1=0-3 mål, X=4 mål, 2=5 mål eller flere)",
+      "2": "Holland-Tyrkiet - Antal mål i kampen (1=0-3 mål, X=4 mål, 2=5 mål eller flere)"
+    },
+    {
+      "1": "Holland-Tyrkiet - Antal hjørnespark (1=0-7 hjørne, X=8-11 hjørne, 2=12 hjørne eller flere)",
+      "2": "Holland-Tyrkiet - Antal hjørnespark (1=0-7 hjørne, X=8-11 hjørne, 2=12 hjørne eller flere)"
+    },
+    {
+      "1": "Holland-Tyrkiet - Flest hjørnespark i kampen (1=Holland, X=Uafgjort, 2=Tyrkiet)",
+      "2": "Holland-Tyrkiet - Flest hjørnespark i kampen (1=Holland, X=Uafgjort, 2=Tyrkiet)"
+    },
+    {
+      "1": "Holland-Tyrkiet - Antal kort i kampen (1=0-3 kort, X=4-5 kort, 2=6+ kort)",
+      "2": "Holland-Tyrkiet - Antal kort i kampen (1=0-3 kort, X=4-5 kort, 2=6+ kort)"
+    },
+    {
+      "1": "Holland-Tyrkiet - Flest kort i kampen (1=Holland, X=Uafgjort, 2=Tyrkiet)",
+      "2": "Holland-Tyrkiet - Flest kort i kampen (1=Holland, X=Uafgjort, 2=Tyrkiet)"
+    },
+    {
+      "1": "Flest mål - Memphis Depay-Hakan Calhanoglu (1=Memphis Depay, X=Uafgjort, 2=Hakan Calhanoglu)",
+      "2": "Flest mål - Memphis Depay-Hakan Calhanoglu (1=Memphis Depay, X=Uafgjort, 2=Hakan Calhanoglu)"
+    },
+    {
+      "1": "Flest mål - Cody Gakpo-Baris Yilmaz (1=Cody Gakpo, X=Uafgjort, 2=Baris Yilmaz)",
+      "2": "Flest mål - Cody Gakpo-Baris Yilmaz (1=Cody Gakpo, X=Uafgjort, 2=Baris Yilmaz)"
+    },
+    {
+      "1": "Flest mål - Virgil van Dijk-Merih Demiral (1=Virgil van Dijk, X=Uafgjort, 2=Merih Demiral)",
+      "2": "Flest mål - Virgil van Dijk-Merih Demiral (1=Virgil van Dijk, X=Uafgjort, 2=Merih Demiral)"
+    },
+    {
+      "1": "Holland-Tyrkiet - Antal dømte straffespark (1=0 straffe, X=1 straffe, 2=2 straffe eller flere)",
+      "2": "Holland-Tyrkiet - Antal dømte straffespark (1=0 straffe, X=1 straffe, 2=2 straffe eller flere)"
+    },
+    {
+      "1": "Holland-Tyrkiet - Antal udskiftninger (1=0-8 udskiftninger, X=9 udskiftninger, 2=10+udskiftninger)",
+      "2": "Holland-Tyrkiet - Antal udskiftninger (1=0-8 udskiftninger, X=9 udskiftninger, 2=10+udskiftninger)"
+    }
+  ],
+  "odds": [
+    1.55, 4.25, 5.75, 2.1, 2.35, 5.5, 1.38, 5.25, 5.5, 3.5, 2.6, 2.3, 1.7, 5,
+    3.2, 3, 2.6, 2.6, 3, 3.75, 2, 3.4, 1.6, 5.5, 3.4, 1.6, 5.5, 7.5, 1.2, 7.5,
+    1.5, 3, 9, 3.1, 2.4, 2.6
+  ]
+}

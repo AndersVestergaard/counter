@@ -1,0 +1,93 @@
+{
+  "real_odds": [
+    1.58, 3.9, 6.25, 2.2, 2.25, 5.75, 1.29, 5.75, 6.75, 3, 2.6, 2.6, 1.7, 5,
+    3.37, 3.2, 3, 2.6, 3, 3.75, 2, 3, 1.7, 5.5, 3.5, 1.5, 6.8, 4.5, 1.25, 11,
+    1.5, 3, 9, 4, 2.3, 2.4
+  ],
+  "matches": [],
+  "bets": [
+    "000000011101",
+    "000000011102",
+    "000000101102",
+    "000000111102",
+    "000000201102",
+    "000000211102",
+    "000000212102",
+    "000001011102",
+    "000001110102",
+    "000001211102",
+    "000010111002",
+    "000010111102",
+    "000010211101",
+    "000010211102",
+    "000011111002",
+    "000200011102",
+    "000200211002",
+    "000211211102",
+    "010001011102",
+    "010010211102",
+    "010200111102",
+    "020210101102",
+    "100000011102",
+    "100000111102",
+    "100001211102",
+    "100010210102",
+    "100100211102",
+    "110000001102"
+  ],
+  "teams": [
+    {
+      "1": "Tyskland-Danmark - Kampvinder (1=Tyskland X=Uafgjort 2=Danmark)",
+      "2": "Tyskland-Danmark - Kampvinder (1=Tyskland X=Uafgjort 2=Danmark)"
+    },
+    {
+      "1": "Tyskland-Danmark - 1.halvleg (1=Tyskland X=Uafgjort 2=Danmark)",
+      "2": "Tyskland-Danmark - 1.halvleg (1=Tyskland X=Uafgjort 2=Danmark)"
+    },
+    {
+      "1": "Tyskland-Danmark - Antal mål i kampen (1=0-3 mål, X=4 mål, 2=5 mål eller flere)",
+      "2": "Tyskland-Danmark - Antal mål i kampen (1=0-3 mål, X=4 mål, 2=5 mål eller flere)"
+    },
+    {
+      "1": "Tyskland-Danmark - Antal hjørnespark (1=0-7 hjørne, X=8-11 hjørne, 2=12 hjørne eller flere)",
+      "2": "Tyskland-Danmark - Antal hjørnespark (1=0-7 hjørne, X=8-11 hjørne, 2=12 hjørne eller flere)"
+    },
+    {
+      "1": "Tyskland-Danmark - Flest hjørnespark i kampen (1=Tyskland, X=Uafgjort, 2=Danmark)",
+      "2": "Tyskland-Danmark - Flest hjørnespark i kampen (1=Tyskland, X=Uafgjort, 2=Danmark)"
+    },
+    {
+      "1": "Tyskland-Danmark - Antal kort i kampen (1=0-3 kort, X=4-5 kort, 2=6+ kort)",
+      "2": "Tyskland-Danmark - Antal kort i kampen (1=0-3 kort, X=4-5 kort, 2=6+ kort)"
+    },
+    {
+      "1": "Tyskland-Danmark - Flest kort i kampen (1=Tyskland, X=Uafgjort, 2=Danmark)",
+      "2": "Tyskland-Danmark - Flest kort i kampen (1=Tyskland, X=Uafgjort, 2=Danmark)"
+    },
+    {
+      "1": "Flest mål - Kai Havertz-Rasmus Højlund (1=Kai Havertz, X=Uafgjort, 2=Rasmus Højlund)",
+      "2": "Flest mål - Kai Havertz-Rasmus Højlund (1=Kai Havertz, X=Uafgjort, 2=Rasmus Højlund)"
+    },
+    {
+      "1": "Flest mål - Jamal Musiala-Christian Eriksen (1=Jamal Musiala, X=Uafgjort, 2=Christian Eriksen)",
+      "2": "Flest mål - Jamal Musiala-Christian Eriksen (1=Jamal Musiala, X=Uafgjort, 2=Christian Eriksen)"
+    },
+    {
+      "1": "Flest mål - Ilkay Gundogan-Pierre Emile Højbjerg (1=Ilkay Gundogan, X=Uafgjort, 2=Pierre Emile Højbjerg)",
+      "2": "Flest mål - Ilkay Gundogan-Pierre Emile Højbjerg (1=Ilkay Gundogan, X=Uafgjort, 2=Pierre Emile Højbjerg)"
+    },
+    {
+      "1": "Tyskland-Danmark - Antal dømte straffespark (1=0 straffe, X=1 straffe, 2=2 straffe eller flere)",
+      "2": "Tyskland-Danmark - Antal dømte straffespark (1=0 straffe, X=1 straffe, 2=2 straffe eller flere)"
+    },
+    {
+      "1": "Tyskland-Danmark - Antal udskiftninger (1=0-8 udskiftninger, X=9 udskiftninger, 2=10+udskiftninger)",
+      "2": "Tyskland-Danmark - Antal udskiftninger (1=0-8 udskiftninger, X=9 udskiftninger, 2=10+udskiftninger)"
+    }
+  ],
+  "odds": [
+    0.8, 0.15, 0.05, 0.8, 0.15, 0.05, 0.999, 0.0001, 0.0001, 0.9, 0.0001, 0.1,
+    0.75, 0.2, 0.05, 0.75, 0.25, 0.0001, 0.3, 0.3, 0.3, 0.1, 0.9, 0.0001, 0.1,
+    0.9, 0.0001, 0.05, 0.95, 0.0001, 0.999, 0.0001, 0.0001, 0.0001, 0.05, 0.95
+  ]
+}
