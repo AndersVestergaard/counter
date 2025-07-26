@@ -1,0 +1,29 @@
+{
+  "optimized_parameters": {
+    "odds_weight": 0.21386566563610385,
+    "team_weight": 0.2219701753440555,
+    "form_weight": 0.561782646040008,
+    "default_patterns": 60,
+    "high_confidence_threshold": 0.65,
+    "medium_confidence_threshold": 0.55,
+    "max_confidence": 0.95,
+    "form_win_weight": 3.0,
+    "form_draw_weight": 1.0,
+    "form_loss_weight": 0.0,
+    "form_window": 5,
+    "home_bias_min_odds": 1.3,
+    "home_bias_max_odds": 4.612892830867751,
+    "home_bias_factor": 0.6872938784175044,
+    "winning_streak_boost": 1.3629261588778943,
+    "losing_streak_penalty": 1.4914768583545979,
+    "streak_length": 1,
+    "home_form_boost": 1.157755626486703,
+    "away_form_boost": 0.3,
+    "strong_form_threshold": 0.7
+  },
+  "roi_percentage": 7854.020467836257,
+  "improvements_found": 14,
+  "optimization_timestamp": "2025-07-27T00:57:21.814465",
+  "dataset_size": 57,
+  "description": "Smart optimizer results with +7854.0% ROI from 14 improvements"
+}

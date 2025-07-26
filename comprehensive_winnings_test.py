@@ -139,6 +139,10 @@ def test_all_files():
         file_cost = len(patterns)
         winning_patterns = 0
         best_correct = 0
+        count_10 = 0
+        count_11 = 0
+        count_12 = 0
+        count_13 = 0
         
         for pattern in patterns:
             winnings = calculate_winnings(pattern, actual_result, penge_values)
@@ -148,6 +152,16 @@ def test_all_files():
                 
             correct_count = sum(1 for pred, actual in zip(pattern, actual_result) if pred == actual)
             best_correct = max(best_correct, correct_count)
+            
+            # Count exact correct predictions
+            if correct_count == 10:
+                count_10 += 1
+            elif correct_count == 11:
+                count_11 += 1
+            elif correct_count == 12:
+                count_12 += 1
+            elif correct_count == 13:
+                count_13 += 1
         
         file_profit = file_winnings - file_cost
         file_roi = (file_profit / file_cost) * 100 if file_cost > 0 else 0
@@ -160,7 +174,7 @@ def test_all_files():
             winning_files += 1
         
         status = "🟢" if file_profit > 0 else "🔴"
-        print(f"{filename:20} | W:{file_winnings:8,} | {best_correct:2}/13 | {status}")
+        print(f"{filename:20} | W:{file_winnings:8,} | 10:{count_10:2} 11:{count_11:2} 12:{count_12:2} 13:{count_13:2} | {best_correct:2}/13 | {status}")
         
         results.append({
             'filename': filename,
@@ -170,7 +184,11 @@ def test_all_files():
             'roi': file_roi,
             'winning_patterns': winning_patterns,
             'best_correct': best_correct,
-            'result': actual_result
+            'result': actual_result,
+            'count_10': count_10,
+            'count_11': count_11,
+            'count_12': count_12,
+            'count_13': count_13
         })
     
     print("-" * 80)

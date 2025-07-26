@@ -410,7 +410,9 @@ class SuperOptimizedBettingSystem:
         
         for strategy in strategies:
             strategy_patterns = strategy(match_confidences, patterns_per_strategy)
-            patterns.extend(strategy_patterns)
+            for pattern in strategy_patterns:
+                if pattern not in patterns:  # Deduplicate across all strategies
+                    patterns.append(pattern)
         
         # Fill remaining slots with random confident patterns
         while len(patterns) < self.params['default_patterns']:
