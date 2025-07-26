@@ -81,7 +81,7 @@ class SmartOptimizer:
             if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
                 return -1000  # Invalid weight combination
             
-            system = SuperOptimizedBettingSystem(random_seed=42)
+            system = SuperOptimizedBettingSystem(random_seed=42, verbose=False)
             system.params.update(params)
             
             total_winnings = 0
@@ -197,9 +197,8 @@ class SmartOptimizer:
             # Generate neighbor
             neighbor_params = self.random_neighbor(current_params, iteration=iteration)
             
-            # Show progress in place (carriage return overwrites the line)
-            progress_pct = (iteration + 1) / max_iterations * 100
-            print(f"\r[{iteration+1:,}/{max_iterations:,}] Testing... {progress_pct:.1f}% | ROI: {current_roi:+.1f}% | Improvements: {improvements}", end="", flush=True)
+            # Show minimal progress - just iteration number
+            print(f"\r{iteration+1:,}/{max_iterations:,}", end="", flush=True)
             
             # Evaluate neighbor
             neighbor_roi = self.evaluate_parameters(neighbor_params)
@@ -207,7 +206,7 @@ class SmartOptimizer:
             # Only print if we found an improvement
             if neighbor_roi > current_roi:
                 improvement = neighbor_roi - current_roi
-                print(f"\n🎯 IMPROVEMENT: {neighbor_roi:+.1f}% (+{improvement:.1f}) at iteration {iteration+1:,}")
+                print(f"\n🎯 IMPROVEMENT {iteration+1:,}: {neighbor_roi:+.1f}% (+{improvement:.1f})")
                 print(f"   📊 Parameters: odds={neighbor_params['odds_weight']:.3f}, team={neighbor_params['team_weight']:.3f}, form={neighbor_params['form_weight']:.3f}")
                 print(f"                 streak_boost={neighbor_params['winning_streak_boost']:.3f}, bias_factor={neighbor_params['home_bias_factor']:.3f}")
                 

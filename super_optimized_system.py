@@ -22,14 +22,15 @@ from collections import defaultdict, deque
 
 
 class SuperOptimizedBettingSystem:
-    def load_optimized_parameters(self):
+    def load_optimized_parameters(self, verbose=True):
         """Load the latest optimized parameters from file"""
         import glob
         
         # Find the latest optimized parameters file
         param_files = glob.glob("optimized_parameters_*.json")
         if not param_files:
-            print("   ⚠️  No optimized parameters file found, using defaults")
+            if verbose:
+                print("   ⚠️  No optimized parameters file found, using defaults")
             return None
         
         # Get the most recent file
@@ -42,21 +43,24 @@ class SuperOptimizedBettingSystem:
             params = data.get('optimized_parameters', {})
             roi = data.get('roi_percentage', 0)
             
-            print(f"   ✅ Loaded optimized parameters from: {latest_file}")
-            print(f"   📊 Expected ROI: {roi:+.1f}%")
+            if verbose:
+                print(f"   ✅ Loaded optimized parameters from: {latest_file}")
+                print(f"   📊 Expected ROI: {roi:+.1f}%")
             return params
             
         except Exception as e:
-            print(f"   ❌ Error loading optimized parameters: {e}")
+            if verbose:
+                print(f"   ❌ Error loading optimized parameters: {e}")
             return None
 
-    def __init__(self, random_seed=42):
+    def __init__(self, random_seed=42, verbose=True):
         """Initialize with optimized parameters from file or defaults"""
         self.random_seed = random_seed
+        self.verbose = verbose
         random.seed(random_seed)
         
         # Try to load optimized parameters from file
-        optimized_params = self.load_optimized_parameters()
+        optimized_params = self.load_optimized_parameters(verbose=verbose)
         
         if optimized_params:
             self.params = optimized_params
@@ -106,30 +110,31 @@ class SuperOptimizedBettingSystem:
         self.historical_matches = []
         self.load_historical_data()
         
-        print("Loading historical data with optimized parameters...")
-        print(f"   - Loaded {len(self.historical_matches)} historical matches")
-        print(f"   - Built profiles for {len(self.team_profiles)} teams")
-        print(f"   - Tracked recent form for {len(self.team_form)} teams")
-        print(f"   - Found {self.count_sweet_spot_matches()} sweet spot matches")
-        
-        if self.using_optimized:
-            print(f"\n🚀 OPTIMIZED BETTING SYSTEM (seed: {self.random_seed})")
+        if verbose:
+            print("Loading historical data with optimized parameters...")
+            print(f"   - Loaded {len(self.historical_matches)} historical matches")
+            print(f"   - Built profiles for {len(self.team_profiles)} teams")
+            print(f"   - Tracked recent form for {len(self.team_form)} teams")
+            print(f"   - Found {self.count_sweet_spot_matches()} sweet spot matches")
+            
+            if self.using_optimized:
+                print(f"\n🚀 OPTIMIZED BETTING SYSTEM (seed: {self.random_seed})")
+                print("=" * 70)
+                print("🏆 USING SMART OPTIMIZER RESULTS")
+                print("🎯 LOADED FROM OPTIMIZED PARAMETERS FILE:")
+            else:
+                print(f"\nFULL DATASET OPTIMIZED BETTING SYSTEM (seed: {self.random_seed})")
+                print("=" * 70)
+                print("🏆 REAL RECORD-BREAKING SYSTEM (ROI: +3,746.2%)")
+                print("🚀 FULL DATASET OPTIMIZATION WINNER (NO OVERFITTING):")
+            
+            print(f"   Pattern count: {self.params['default_patterns']}")
+            print(f"   Odds weight: {self.params['odds_weight']:.3f}")
+            print(f"   Team weight: {self.params['team_weight']:.3f}")
+            print(f"   Form weight: {self.params['form_weight']:.3f}")
+            print(f"   Winning streak boost: {self.params['winning_streak_boost']:.3f}")
+            print(f"   High confidence: {self.params['high_confidence_threshold']}")
             print("=" * 70)
-            print("🏆 USING SMART OPTIMIZER RESULTS")
-            print("🎯 LOADED FROM OPTIMIZED PARAMETERS FILE:")
-        else:
-            print(f"\nFULL DATASET OPTIMIZED BETTING SYSTEM (seed: {self.random_seed})")
-            print("=" * 70)
-            print("🏆 REAL RECORD-BREAKING SYSTEM (ROI: +3,746.2%)")
-            print("🚀 FULL DATASET OPTIMIZATION WINNER (NO OVERFITTING):")
-        
-        print(f"   Pattern count: {self.params['default_patterns']}")
-        print(f"   Odds weight: {self.params['odds_weight']:.3f}")
-        print(f"   Team weight: {self.params['team_weight']:.3f}")
-        print(f"   Form weight: {self.params['form_weight']:.3f}")
-        print(f"   Winning streak boost: {self.params['winning_streak_boost']:.3f}")
-        print(f"   High confidence: {self.params['high_confidence_threshold']}")
-        print("=" * 70)
 
     def load_historical_data(self):
         """Load historical match data for form analysis"""

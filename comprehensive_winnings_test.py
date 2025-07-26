@@ -159,8 +159,8 @@ def test_all_files():
         if file_profit > 0:
             winning_files += 1
         
-        status = "🟢 PROFIT" if file_profit > 0 else "🔴 LOSS"
-        print(f"{filename:25} | Result: {actual_result} | Winnings: {file_winnings:6,} | Cost: {file_cost:2} | Profit: {file_profit:6,} | ROI: {file_roi:6.1f}% | Best: {best_correct:2}/13 | {status}")
+        status = "🟢" if file_profit > 0 else "🔴"
+        print(f"{filename:20} | W:{file_winnings:8,} | {best_correct:2}/13 | {status}")
         
         results.append({
             'filename': filename,
