@@ -554,7 +554,9 @@ class SuperOptimizedBettingSystem:
         
         return {
             'filename': filename,
-            'patterns': patterns,
+            'teams': teams,  # Include team data from test file
+            'odds': odds,    # Include odds data from test file
+            'bets': patterns,  # Rename patterns to bets
             'total_patterns': len(patterns),
             'optimized_parameters': self.params,
             'random_seed': self.random_seed,
@@ -602,11 +604,11 @@ def main():
     print(f"Expected ROI: {results['expected_roi']}")
     print(f"Beats previous best by: {results['improvement_over_previous']}")
     print(f"\nSample patterns:")
-    for i, pattern in enumerate(results['patterns'][:10], 1):
+    for i, pattern in enumerate(results['bets'][:10], 1):
         print(f"  {i:2d}. {pattern}")
     
-    if len(results['patterns']) > 10:
-        print(f"   ... and {len(results['patterns']) - 10} more")
+    if len(results['bets']) > 10:
+        print(f"   ... and {len(results['bets']) - 10} more")
     
     # Save results
     output_file = f"super_optimized_suggestions_{filename}"

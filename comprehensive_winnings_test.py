@@ -132,7 +132,7 @@ def test_all_files():
             print(f"❌ {filename}: {analysis['error']}")
             continue
         
-        patterns = analysis['patterns']
+        patterns = analysis['bets']
         
         # Calculate winnings
         file_winnings = 0
