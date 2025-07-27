@@ -223,18 +223,13 @@ def test_all_files():
     print()
     print("📈 TOP PERFORMING FILES:")
     sorted_results = sorted(results, key=lambda x: x['roi'], reverse=True)
-    for i, result in enumerate(sorted_results[:5], 1):
-        print(f"   {i}. {result['filename']:25} | ROI: {result['roi']:6.1f}% | Profit: {result['profit']:6,}")
-    
-    print()
-    print("📉 WORST PERFORMING FILES:")
-    for i, result in enumerate(sorted_results[-5:], 1):
-        print(f"   {i}. {result['filename']:25} | ROI: {result['roi']:6.1f}% | Profit: {result['profit']:6,}")
+    for i, result in enumerate(sorted_results[:10], 1):
+        print(f"   {i}. {result['filename']:25} | ROI: {result['roi']:6.1f}% | Profit: {result['profit']:6,}")    
     
     print()
     print("🎯 BEST PREDICTION ACCURACY:")
     sorted_by_accuracy = sorted(results, key=lambda x: x['best_correct'], reverse=True)
-    for i, result in enumerate(sorted_by_accuracy[:5], 1):
+    for i, result in enumerate(sorted_by_accuracy[:10], 1):
         print(f"   {i}. {result['filename']:25} | Best: {result['best_correct']:2}/13 correct | Result: {result['result']}")
     
     return {
