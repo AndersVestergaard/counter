@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 SMART OPTIMIZER: Avoids endless loops with intelligent sampling
-Uses gradient-free optimization techniques to improve on +1724.3% ROI
+Uses gradient-free optimization techniques to maximize total winnings
 """
 
 import json
@@ -52,6 +52,7 @@ class SmartOptimizer:
             'odds_weight': (0.05, 4.0),
             'team_weight': (0.01, 2.0),
             'form_weight': (0.001, 2.0),
+            'default_patterns': (25, 125),  # Number of bets to make
             'home_bias_max_odds': (0.8, 10.0),
             'home_bias_factor': (0.3, 2.0),
             'winning_streak_boost': (0.5, 3.0),
@@ -61,7 +62,7 @@ class SmartOptimizer:
             'away_form_boost': (0.3, 3.0)
         }
         
-        self.best_roi = 0  # Starting ROI - will find the actual best through optimization
+        self.best_winnings = 0  # Starting winnings - will find the actual best through optimization
         self.test_files = []
         self.load_test_files()
         
@@ -75,11 +76,11 @@ class SmartOptimizer:
         return 0.9 <= total <= 1.1
     
     def evaluate_parameters(self, params):
-        """Evaluate a parameter set and return ROI"""
+        """Evaluate a parameter set and return total winnings"""
         try:
             # Validate weights
             if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
-                return -1000  # Invalid weight combination
+                return -10000  # Invalid weight combination
             
             system = SuperOptimizedBettingSystem(random_seed=42, verbose=False)
             system.params.update(params)
@@ -105,16 +106,15 @@ class SmartOptimizer:
                     total_cost += 1
             
             if total_cost == 0:
-                return -1000
+                return -10000
             
             net_profit = total_winnings - total_cost
-            roi = (net_profit / total_cost) * 100
             
-            return roi
+            return net_profit  # Return total winnings instead of ROI
             
         except Exception as e:
             print(f"Error evaluating parameters: {e}")
-            return -1000
+            return -10000
     
     def random_neighbor(self, params, step_size=0.15, iteration=0):
         """Generate a random neighbor of current parameters with AGGRESSIVE variation"""
@@ -134,7 +134,7 @@ class SmartOptimizer:
         large_jump = random.random() < 0.8
         
         for param in to_change:
-            if param in ['streak_length']:
+            if param in ['streak_length', 'default_patterns']:
                 # Integer parameters
                 min_val, max_val = self.param_bounds[param]
                 current = new_params[param]
@@ -174,7 +174,7 @@ class SmartOptimizer:
         print("=" * 60)
         
         current_params = self.best_params.copy()
-        current_roi = self.best_roi
+        current_winnings = self.best_winnings
         
         start_time = time.time()
         max_time_seconds = max_time_minutes * 60
@@ -183,8 +183,8 @@ class SmartOptimizer:
         
         # First, evaluate current parameters to establish baseline
         print("🔍 Evaluating starting parameters...")
-        current_roi = self.evaluate_parameters(current_params)
-        print(f"✅ Starting ROI: {current_roi:+.1f}%")
+        current_winnings = self.evaluate_parameters(current_params)
+        print(f"✅ Starting Winnings: {current_winnings:+.1f}")
         print()
         
         for iteration in range(max_iterations):
@@ -201,43 +201,44 @@ class SmartOptimizer:
             print(f"\r{iteration+1:,}/{max_iterations}", end="", flush=True)
             
             # Evaluate neighbor
-            neighbor_roi = self.evaluate_parameters(neighbor_params)
+            neighbor_winnings = self.evaluate_parameters(neighbor_params)
             
             # Only print if we found an improvement
-            if neighbor_roi > current_roi:
-                improvement = neighbor_roi - current_roi
-                print(f"\n🎯 IMPROVEMENT {iteration+1:,}: {neighbor_roi:+.1f}% (+{improvement:.1f})")
+            if neighbor_winnings > current_winnings:
+                improvement = neighbor_winnings - current_winnings
+                print(f"\n🎯 IMPROVEMENT {iteration+1:,}: {neighbor_winnings:+.1f} (+{improvement:.1f})")
                 print(f"   📊 Parameters: odds={neighbor_params['odds_weight']:.3f}, team={neighbor_params['team_weight']:.3f}, form={neighbor_params['form_weight']:.3f}")
-                print(f"                 streak_boost={neighbor_params['winning_streak_boost']:.3f}, bias_factor={neighbor_params['home_bias_factor']:.3f}")
+                print(f"                 bets={neighbor_params['default_patterns']}, streak_boost={neighbor_params['winning_streak_boost']:.3f}, bias_factor={neighbor_params['home_bias_factor']:.3f}")
                 
                 current_params = neighbor_params
-                current_roi = neighbor_roi
+                current_winnings = neighbor_winnings
                 improvements += 1
         
         print("\n" + "=" * 60)
         print(f"✅ OPTIMIZATION COMPLETE")
         print(f"   Iterations: {iteration + 1}")
         print(f"   Improvements found: {improvements}")
-        print(f"   Final ROI: {current_roi:+.1f}%")
+        print(f"   Final Winnings: {current_winnings:+.1f}")
         
         if improvements > 0:
             print(f"   🏆 Best parameters found:")
             print(f"     odds_weight: {current_params['odds_weight']:.3f}")
             print(f"     team_weight: {current_params['team_weight']:.3f}")
             print(f"     form_weight: {current_params['form_weight']:.3f}")
+            print(f"     default_patterns: {current_params['default_patterns']} bets")
             print(f"     winning_streak_boost: {current_params['winning_streak_boost']:.3f}")
             print(f"     home_bias_factor: {current_params['home_bias_factor']:.3f}")
             
             # Ask user if they want to save parameters
-            save_params = input(f"\n💾 Save optimized parameters (ROI: {current_roi:+.1f}%) to file? (y/n): ").strip().lower()
+            save_params = input(f"\n💾 Save optimized parameters (Winnings: {current_winnings:+.1f}) to file? (y/n): ").strip().lower()
             if save_params == 'y':
-                self.save_parameters_to_file(current_params, current_roi, improvements)
+                self.save_parameters_to_file(current_params, current_winnings, improvements)
         else:
             print(f"   📊 No improvements found - current parameters may already be optimal")
         
-        return current_params, current_roi
+        return current_params, current_winnings
     
-    def save_parameters_to_file(self, params, roi, improvements):
+    def save_parameters_to_file(self, params, winnings, improvements):
         """Save optimized parameters to a JSON file"""
         import datetime
         
@@ -248,11 +249,11 @@ class SmartOptimizer:
         # Prepare data to save
         data = {
             "optimized_parameters": params,
-            "roi_percentage": roi,
+            "winnings_amount": winnings,
             "improvements_found": improvements,
             "optimization_timestamp": datetime.datetime.now().isoformat(),
             "dataset_size": len(self.test_files),
-            "description": f"Smart optimizer results with {roi:+.1f}% ROI from {improvements} improvements"
+            "description": f"Smart optimizer results with {winnings:+.1f} winnings from {improvements} improvements"
         }
         
         try:
@@ -260,7 +261,7 @@ class SmartOptimizer:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             
             print(f"   ✅ Parameters saved to: {filename}")
-            print(f"   📊 ROI: {roi:+.1f}%")
+            print(f"   📊 Winnings: {winnings:+.1f}")
             print(f"   🔧 Load in code with: json.load(open('{filename}'))")
             
         except Exception as e:
@@ -269,8 +270,8 @@ class SmartOptimizer:
     def quick_test_current(self):
         """Quick test of current best parameters"""
         print("🔍 Testing current parameters...")
-        roi = self.evaluate_parameters(self.best_params)
-        return roi
+        winnings = self.evaluate_parameters(self.best_params)
+        return winnings
 
     def load_latest_optimized_parameters(self):
         """Load the latest optimized parameters from file"""
@@ -289,10 +290,11 @@ class SmartOptimizer:
                 data = json.load(f)
             
             params = data.get('optimized_parameters', {})
-            roi = data.get('roi_percentage', 0)
+            # Handle backward compatibility - check for both new and old formats
+            winnings = data.get('winnings_amount', data.get('roi_percentage', 0))
             
             print(f"   📂 Loading from: {latest_file}")
-            print(f"   📊 Previous ROI: {roi:+.1f}%")
+            print(f"   📊 Previous Winnings: {winnings:+.1f}")
             return params
             
         except Exception as e:
@@ -307,15 +309,15 @@ def main():
     print("=" * 60)
     
     # Quick test current system
-    current_roi = optimizer.quick_test_current()
-    print(f"Current parameters ROI: {current_roi:+.1f}%")
+    current_winnings = optimizer.quick_test_current()
+    print(f"Current parameters Winnings: {current_winnings:+.1f}")
     
     # Ask user if they want to proceed
     proceed = input("\nStart optimization? (y/n): ").strip().lower()
     
     if proceed == 'y':
         # Run optimization with 10,000 iterations
-        best_params, best_roi = optimizer.hill_climbing_optimization(max_iterations=10000, max_time_minutes=60)
+        best_params, best_winnings = optimizer.hill_climbing_optimization(max_iterations=10000, max_time_minutes=60)
         
     else:
         print("Optimization cancelled.")
