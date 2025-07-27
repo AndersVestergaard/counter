@@ -21,12 +21,8 @@ class SmartOptimizer:
         # Load optimized parameters from file if available
         optimized_params = self.load_latest_optimized_parameters()
         
-        if optimized_params:
-            self.best_params = optimized_params
-            print(f"   ✅ Starting with optimized parameters from file")
-        else:
-            # Fallback to default parameters
-            self.best_params = {
+        # Define all default parameters first
+        default_params = {
                 'odds_weight': 0.393,
                 'team_weight': 0.276,
                 'form_weight': 0.335,
@@ -46,8 +42,34 @@ class SmartOptimizer:
                 'streak_length': 3,
                 'home_form_boost': 1.212279924526011,
                 'away_form_boost': 1.1,
-                'strong_form_threshold': 0.7
+                'strong_form_threshold': 0.7,
+                
+                # Enhanced opponent analysis weights (optimizable)
+                'base_form_weight': 0.4,
+                'opponent_pattern_weight': 0.25,
+                'head_to_head_weight': 0.15,
+                'tendency_weight': 0.1,
+                'contextual_weight': 0.1,
+                
+                # Enhanced consistency weights (optimizable)
+                'consistency_base_weight': 0.5,
+                'consistency_h2h_weight': 0.3,
+                'consistency_opponent_weight': 0.2,
+                
+                # Form confidence sensitivity (optimizable)
+                'form_sensitivity': 0.4,
+                'draw_sensitivity': 0.25
             }
+        
+        # Merge optimized parameters with defaults (ensures all parameters are present)
+        if optimized_params:
+            # Start with defaults, then update with optimized values
+            self.best_params = default_params.copy()
+            self.best_params.update(optimized_params)
+            print(f"   ✅ Starting with optimized parameters from file (merged with new defaults)")
+        else:
+            # Use defaults only
+            self.best_params = default_params
             print(f"   ⚠️  No optimized parameters found, using defaults")
         
         # Parameter bounds for optimization (MASSIVELY EXTREME search for 100k iterations)
@@ -62,12 +84,28 @@ class SmartOptimizer:
             'losing_streak_penalty': (0.1, 2.0),
             'streak_length': (1, 5),
             'home_form_boost': (0.3, 3.0),
-            'away_form_boost': (0.3, 3.0)
+            'away_form_boost': (0.3, 3.0),
+            
+            # NEW: Enhanced opponent analysis weights (optimizable ranges)
+            'base_form_weight': (0.1, 0.8),         # Traditional form weight
+            'opponent_pattern_weight': (0.05, 0.5), # Opponent patterns weight
+            'head_to_head_weight': (0.05, 0.4),     # Head-to-head history weight
+            'tendency_weight': (0.02, 0.3),         # Recent tendencies weight
+            'contextual_weight': (0.02, 0.3),       # Contextual form weight
+            
+            # NEW: Enhanced consistency weights (should sum to ~1.0)
+            'consistency_base_weight': (0.2, 0.8),  # Base consistency weight
+            'consistency_h2h_weight': (0.1, 0.6),   # H2H consistency weight
+            'consistency_opponent_weight': (0.1, 0.5), # Opponent pattern consistency weight
+            
+            # NEW: Form confidence sensitivity
+            'form_sensitivity': (0.1, 0.8),         # Form difference sensitivity
+            'draw_sensitivity': (0.1, 0.5),         # Draw likelihood sensitivity
         }
         
         # Multi-objective optimization weights
-        self.winnings_weight = 0.6  # Weight for total winnings
-        self.win_rate_weight = 0.4  # Weight for win frequency (weeks with 12+ correct)
+        self.winnings_weight = 0.7  # Weight for total winnings
+        self.win_rate_weight = 0.3  # Weight for win frequency (weeks with 12+ correct)
         
         self.best_winnings = 0  # Starting winnings - will find the actual best through optimization
         self.test_files = []
@@ -82,11 +120,35 @@ class SmartOptimizer:
         total = odds_w + team_w + form_w
         return 0.9 <= total <= 1.1
     
+    def validate_all_weights(self, params):
+        """Comprehensive validation for all weight groups"""
+        # Original weight validation
+        if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
+            return False
+        
+        # Enhanced form weights should sum to approximately 1.0
+        form_total = (params.get('base_form_weight', 0.4) + 
+                     params.get('opponent_pattern_weight', 0.25) + 
+                     params.get('head_to_head_weight', 0.15) + 
+                     params.get('tendency_weight', 0.1) + 
+                     params.get('contextual_weight', 0.1))
+        if not (0.9 <= form_total <= 1.1):
+            return False
+        
+        # Consistency weights should sum to approximately 1.0
+        consistency_total = (params.get('consistency_base_weight', 0.5) + 
+                            params.get('consistency_h2h_weight', 0.3) + 
+                            params.get('consistency_opponent_weight', 0.2))
+        if not (0.9 <= consistency_total <= 1.1):
+            return False
+        
+        return True
+    
     def evaluate_parameters(self, params):
         """Evaluate a parameter set with multi-objective scoring: winnings + win rate"""
         try:
-            # Validate weights
-            if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
+            # Validate all weights (including new enhanced parameters)
+            if not self.validate_all_weights(params):
                 return -10000  # Invalid weight combination
             
             system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)
@@ -201,8 +263,8 @@ class SmartOptimizer:
     def get_detailed_metrics(self, params):
         """Get detailed metrics for a parameter set: winnings, win rate, etc."""
         try:
-            # Validate weights
-            if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
+            # Validate all weights (including new enhanced parameters)
+            if not self.validate_all_weights(params):
                 return None
             
             system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)
@@ -419,8 +481,8 @@ class SmartOptimizer:
     def _evaluate_parameters_worker(self, params, test_files):
         """Worker-specific parameter evaluation function with multi-objective scoring"""
         try:
-            # Validate weights
-            if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
+            # Validate all weights (including new enhanced parameters)
+            if not self.validate_all_weights(params):
                 return -10000  # Invalid weight combination
             
             system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)

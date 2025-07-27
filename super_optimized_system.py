@@ -104,6 +104,22 @@ class EnhancedSuperOptimizedBettingSystem:
             'home_form_boost': 1.1,          # Slight home advantage 
             'away_form_boost': 1.1,          # Equal away boost
             'strong_form_threshold': 0.7,    # Threshold for "strong" form
+            
+            # NEW: Enhanced opponent analysis weights (optimizable)
+            'base_form_weight': 0.4,         # Traditional form weight in enhanced score
+            'opponent_pattern_weight': 0.25, # Opponent patterns weight
+            'head_to_head_weight': 0.15,     # Head-to-head history weight
+            'tendency_weight': 0.1,          # Recent tendencies weight
+            'contextual_weight': 0.1,        # Contextual form weight
+            
+            # NEW: Enhanced consistency weights (optimizable)
+            'consistency_base_weight': 0.5,  # Base consistency weight
+            'consistency_h2h_weight': 0.3,   # H2H consistency weight
+            'consistency_opponent_weight': 0.2, # Opponent pattern consistency weight
+            
+            # NEW: Form confidence sensitivity (optimizable)
+            'form_sensitivity': 0.4,         # Form difference sensitivity (was 0.3)
+            'draw_sensitivity': 0.25,        # Draw likelihood sensitivity
             }
         
         # Enhanced data structures for deep form analysis
@@ -323,13 +339,13 @@ class EnhancedSuperOptimizedBettingSystem:
         # NEW: Add contextual form factor
         contextual_factor = self.get_contextual_form_factor(team_name, is_home)
         
-        # Combine all factors (weights can be optimized later)
+        # Combine all factors using optimizable weights (with fallback defaults)
         enhanced_form = (
-            base_form * 0.4 +                    # Traditional form (40%)
-            opponent_factor * 0.25 +             # Opponent patterns (25%) 
-            h2h_factor * 0.15 +                  # Head-to-head (15%)
-            tendency_factor * 0.1 +              # Recent tendencies (10%)
-            contextual_factor * 0.1              # Contextual form (10%)
+            base_form * self.params.get('base_form_weight', 0.4) +                    # Traditional form
+            opponent_factor * self.params.get('opponent_pattern_weight', 0.25) +     # Opponent patterns 
+            h2h_factor * self.params.get('head_to_head_weight', 0.15) +              # Head-to-head
+            tendency_factor * self.params.get('tendency_weight', 0.1) +              # Recent tendencies
+            contextual_factor * self.params.get('contextual_weight', 0.1)            # Contextual form
         )
         
         return min(0.95, max(0.05, enhanced_form))
@@ -508,12 +524,12 @@ class EnhancedSuperOptimizedBettingSystem:
         home_form = self.get_enhanced_team_form_score(home_team, away_team, is_home=True)
         away_form = self.get_enhanced_team_form_score(away_team, home_team, is_home=False)
         
-        # Enhanced form-based confidence with opponent awareness
+        # Enhanced form-based confidence with optimizable sensitivity (with fallback defaults)
         form_difference = home_form - away_form
         form_confidence = {
-            '0': 0.5 + (form_difference * 0.4),  # Increased sensitivity
-            '1': 0.5 - abs(form_difference * 0.25),  # Draw more likely if forms similar
-            '2': 0.5 - (form_difference * 0.4)   # Increased sensitivity
+            '0': 0.5 + (form_difference * self.params.get('form_sensitivity', 0.4)),  # Optimizable sensitivity
+            '1': 0.5 - abs(form_difference * self.params.get('draw_sensitivity', 0.25)),  # Draw sensitivity
+            '2': 0.5 - (form_difference * self.params.get('form_sensitivity', 0.4))   # Optimizable sensitivity
         }
         
         # Normalize form confidence
@@ -560,11 +576,11 @@ class EnhancedSuperOptimizedBettingSystem:
         h2h_consistency = self.get_head_to_head_factor(home_team, away_team, True)
         opponent_pattern_consistency = self.get_opponent_pattern_factor(home_team, away_team, True)
         
-        # Weighted combination
+        # Weighted combination using optimizable weights (with fallback defaults)
         enhanced_consistency = (
-            base_consistency * 0.5 +
-            h2h_consistency * 0.3 +
-            opponent_pattern_consistency * 0.2
+            base_consistency * self.params.get('consistency_base_weight', 0.5) +
+            h2h_consistency * self.params.get('consistency_h2h_weight', 0.3) +
+            opponent_pattern_consistency * self.params.get('consistency_opponent_weight', 0.2)
         )
         
         return min(0.9, max(0.1, enhanced_consistency))
