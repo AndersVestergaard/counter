@@ -100,7 +100,7 @@ def test_all_files():
     print()
     
     # Initialize the mega optimized system
-    system = SuperOptimizedBettingSystem(random_seed=42)
+    system = SuperOptimizedBettingSystem(random_seed=43)
     
     # Load all complete test files
     test_files = load_all_complete_test_files()
