@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ENHANCED SUPER OPTIMIZED BETTING SYSTEM: +1724.3% ROI + Advanced Opponent Analysis
-Standalone implementation with deep form analysis, opponent patterns, and head-to-head history
+ENHANCED SUPER OPTIMIZED BETTING SYSTEM: +1724.3% ROI + Advanced Opponent Analysis + Odds Difference Analysis
+Standalone implementation with deep form analysis, opponent patterns, head-to-head history, and odds difference patterns
 
 NEW FEATURES:
 - Opponent form analysis: Deep analysis of what opponents tend to do
@@ -10,6 +10,9 @@ NEW FEATURES:
 - Opponent tendencies: Track opponent draws/wins/losses patterns
 - Contextual form: Performance against similar strength opponents
 - Form momentum: Trends and momentum beyond simple streaks
+- 🆕 ODDS DIFFERENCE ANALYSIS: Track team performance based on historical odds differences
+- 🆕 EQUAL MATCH PERFORMANCE: Analyze how teams perform when equally matched vs favorites/underdogs
+- 🆕 ODDS DIFFERENCE SENSITIVITY: Optimizable parameters for odds difference patterns
 
 USAGE: python3 super_optimized_system.py filename.json
 """
@@ -19,8 +22,8 @@ import os
 import sys
 import random
 import itertools
-from collections import defaultdict, deque
 import statistics
+from collections import defaultdict, deque
 
 
 class EnhancedSuperOptimizedBettingSystem:
@@ -56,7 +59,7 @@ class EnhancedSuperOptimizedBettingSystem:
             return None
 
     def __init__(self, random_seed=42, verbose=True):
-        """Initialize with enhanced form analysis"""
+        """Initialize with enhanced form analysis and odds difference tracking"""
         self.random_seed = random_seed
         self.verbose = verbose
         random.seed(random_seed)
@@ -65,11 +68,7 @@ class EnhancedSuperOptimizedBettingSystem:
         optimized_params = self.load_optimized_parameters(verbose=verbose)
         
         if optimized_params:
-            self.params = optimized_params
-            self.using_optimized = True
-        else:
-            # FALLBACK DEFAULT PARAMETERS
-            self.using_optimized = False
+            # Start with defaults, then update with optimized values to ensure all parameters exist
             self.params = {
             # Core weights (FULL DATASET OPTIMIZATION - NO OVERFITTING)
             'odds_weight': 0.393,            # Full dataset optimized: Balanced odds
@@ -77,7 +76,7 @@ class EnhancedSuperOptimizedBettingSystem:
             'form_weight': 0.335,            # Full dataset optimized: High form emphasis!
             
             # Pattern generation
-            'default_patterns': 60,          # Optimal count (not 75)
+            'default_patterns': 60,          # Optimal count (restored)
             
             # Confidence thresholds
             'high_confidence_threshold': 0.65,
@@ -120,6 +119,83 @@ class EnhancedSuperOptimizedBettingSystem:
             # NEW: Form confidence sensitivity (optimizable)
             'form_sensitivity': 0.4,         # Form difference sensitivity (was 0.3)
             'draw_sensitivity': 0.25,        # Draw likelihood sensitivity
+            
+            # 🆕 NEW: ODDS DIFFERENCE ANALYSIS PARAMETERS (optimizable)
+            'odds_diff_weight': 0.15,        # Weight for odds difference analysis in confidence
+            'equal_match_boost': 1.2,        # Boost for teams that perform well in equal matches
+            'favorite_performance_boost': 1.1, # Boost for teams that perform well as favorites
+            'underdog_performance_boost': 1.3, # Boost for teams that perform well as underdogs
+            'odds_diff_threshold_tight': 0.3,  # Threshold for "tight" odds differences
+            'odds_diff_threshold_moderate': 0.7, # Threshold for "moderate" odds differences  
+            'odds_diff_sensitivity': 0.5,    # Sensitivity to odds difference patterns
+            'odds_diff_window': 8,           # Number of historical matches to analyze for odds patterns
+            }
+            # Now update with optimized values
+            self.params.update(optimized_params)
+            self.using_optimized = True
+        else:
+            # FALLBACK DEFAULT PARAMETERS
+            self.using_optimized = False
+            self.params = {
+            # Core weights (FULL DATASET OPTIMIZATION - NO OVERFITTING)
+            'odds_weight': 0.393,            # Full dataset optimized: Balanced odds
+            'team_weight': 0.276,            # Full dataset optimized: Reduced team emphasis
+            'form_weight': 0.335,            # Full dataset optimized: High form emphasis!
+            
+            # Pattern generation
+            'default_patterns': 60,          # Optimal count (restored)
+            
+            # Confidence thresholds
+            'high_confidence_threshold': 0.65,
+            'medium_confidence_threshold': 0.55,
+            'max_confidence': 0.95,
+            
+            # Form analysis (CRITICAL FOR GOOD PERFORMANCE)
+            'form_win_weight': 3.0,          # Wins worth 3 points
+            'form_draw_weight': 1.0,         # Draws worth 1 point  
+            'form_loss_weight': 0.0,         # Losses worth 0 points
+            'form_window': 5,                # Look at last 5 games
+            
+            # Home bias parameters (FULL DATASET OPTIMIZED)
+            'home_bias_min_odds': 1.3,       # Don't apply below this
+            'home_bias_max_odds': 2.5,       # Keep original range
+            'home_bias_factor': 0.868,       # Full dataset optimized: Fine-tuned
+            
+            # Streak adjustments (FULL DATASET OPTIMIZED: EVEN BIGGER STREAKS!)
+            'winning_streak_boost': 2.898,   # FULL DATASET OPTIMIZED: Massive winning streak boost!
+            'losing_streak_penalty': 0.85,   # Keep penalty same
+            'streak_length': 3,              # Keep same minimum
+            
+            # Form boosts
+            'home_form_boost': 1.1,          # Slight home advantage 
+            'away_form_boost': 1.1,          # Equal away boost
+            'strong_form_threshold': 0.7,    # Threshold for "strong" form
+            
+            # NEW: Enhanced opponent analysis weights (optimizable)
+            'base_form_weight': 0.4,         # Traditional form weight in enhanced score
+            'opponent_pattern_weight': 0.25, # Opponent patterns weight
+            'head_to_head_weight': 0.15,     # Head-to-head history weight
+            'tendency_weight': 0.1,          # Recent tendencies weight
+            'contextual_weight': 0.1,        # Contextual form weight
+            
+            # NEW: Enhanced consistency weights (optimizable)
+            'consistency_base_weight': 0.5,  # Base consistency weight
+            'consistency_h2h_weight': 0.3,   # H2H consistency weight
+            'consistency_opponent_weight': 0.2, # Opponent pattern consistency weight
+            
+            # NEW: Form confidence sensitivity (optimizable)
+            'form_sensitivity': 0.4,         # Form difference sensitivity (was 0.3)
+            'draw_sensitivity': 0.25,        # Draw likelihood sensitivity
+            
+            # 🆕 NEW: ODDS DIFFERENCE ANALYSIS PARAMETERS (optimizable)
+            'odds_diff_weight': 0.15,        # Weight for odds difference analysis in confidence
+            'equal_match_boost': 1.2,        # Boost for teams that perform well in equal matches
+            'favorite_performance_boost': 1.1, # Boost for teams that perform well as favorites
+            'underdog_performance_boost': 1.3, # Boost for teams that perform well as underdogs
+            'odds_diff_threshold_tight': 0.3,  # Threshold for "tight" odds differences
+            'odds_diff_threshold_moderate': 0.7, # Threshold for "moderate" odds differences  
+            'odds_diff_sensitivity': 0.5,    # Sensitivity to odds difference patterns
+            'odds_diff_window': 8,           # Number of historical matches to analyze for odds patterns
             }
         
         # Enhanced data structures for deep form analysis
@@ -129,29 +205,35 @@ class EnhancedSuperOptimizedBettingSystem:
         self.head_to_head = {}       # NEW: Head-to-head historical records
         self.team_tendencies = {}    # NEW: What teams tend to do recently
         self.contextual_form = {}    # NEW: Form against similar strength teams
+        
+        # 🆕 NEW: ODDS DIFFERENCE TRACKING
+        self.odds_difference_patterns = {}  # Track performance based on odds differences
+        self.team_odds_history = {}         # Track historical odds for each team
+        
         self.historical_matches = []
         
         # Load historical data for enhanced analysis
         self.load_historical_data_enhanced()
         
         if verbose:
-            print("Loading enhanced historical data with deep opponent analysis...")
+            print("Loading enhanced historical data with deep opponent analysis and odds difference tracking...")
             print(f"   - Loaded {len(self.historical_matches)} historical matches")
             print(f"   - Built profiles for {len(self.team_profiles)} teams")
             print(f"   - Tracked recent form for {len(self.team_form)} teams")
             print(f"   - Analyzed opponent patterns for {len(self.opponent_patterns)} teams")
             print(f"   - Built head-to-head records for {len(self.head_to_head)} matchups")
+            print(f"   - 🆕 Tracked odds difference patterns for {len(self.odds_difference_patterns)} teams")
             print(f"   - Found {self.count_sweet_spot_matches()} sweet spot matches")
             
             if self.using_optimized:
                 print(f"\n🚀 ENHANCED OPTIMIZED BETTING SYSTEM (seed: {self.random_seed})")
                 print("=" * 70)
-                print("🏆 USING SMART OPTIMIZER RESULTS + ENHANCED OPPONENT ANALYSIS")
+                print("🏆 USING SMART OPTIMIZER RESULTS + ENHANCED OPPONENT ANALYSIS + ODDS DIFFERENCE ANALYSIS")
                 print("🎯 LOADED FROM OPTIMIZED PARAMETERS FILE:")
             else:
                 print(f"\nENHANCED FULL DATASET OPTIMIZED BETTING SYSTEM (seed: {self.random_seed})")
                 print("=" * 70)
-                print("🏆 REAL RECORD-BREAKING SYSTEM + ENHANCED OPPONENT ANALYSIS")
+                print("🏆 REAL RECORD-BREAKING SYSTEM + ENHANCED OPPONENT ANALYSIS + ODDS DIFFERENCE ANALYSIS")
                 print("🚀 FULL DATASET OPTIMIZATION WINNER (NO OVERFITTING):")
             
             print(f"   Pattern count: {self.params['default_patterns']}")
@@ -160,7 +242,8 @@ class EnhancedSuperOptimizedBettingSystem:
             print(f"   Form weight: {self.params['form_weight']:.3f}")
             print(f"   Winning streak boost: {self.params['winning_streak_boost']:.3f}")
             print(f"   High confidence: {self.params['high_confidence_threshold']}")
-            print("   🆕 ENHANCED: Opponent patterns, head-to-head, contextual form")
+            print(f"   🆕 Odds difference weight: {self.params.get('odds_diff_weight', 0.15):.3f}")
+            print("   🆕 ENHANCED: Opponent patterns, head-to-head, contextual form, odds difference analysis")
             print("=" * 70)
 
     def load_historical_data_enhanced(self):
@@ -221,6 +304,12 @@ class EnhancedSuperOptimizedBettingSystem:
                 self.update_team_tendencies(away_team, match_result, False)
                 self.update_contextual_form(home_team, away_team, match_result, True, match_odds)
                 self.update_contextual_form(away_team, home_team, match_result, False, match_odds)
+                
+                # 🆕 NEW: ODDS DIFFERENCE ANALYSIS
+                self.update_odds_difference_patterns(home_team, away_team, match_result, True, match_odds)
+                self.update_odds_difference_patterns(away_team, home_team, match_result, False, match_odds)
+                self.update_team_odds_history(home_team, away_team, match_odds, True)
+                self.update_team_odds_history(away_team, home_team, match_odds, False)
 
     # NEW: Enhanced opponent analysis methods
     def update_opponent_patterns(self, team, opponent, result, is_home, odds):
@@ -322,6 +411,179 @@ class EnhancedSuperOptimizedBettingSystem:
         else:  # Close match
             contextual['close_matches'].append(team_result)
 
+    # 🆕 NEW: ODDS DIFFERENCE ANALYSIS METHODS
+    def update_odds_difference_patterns(self, team, opponent, result, is_home, odds):
+        """Track team performance based on odds differences in historical matches"""
+        if team not in self.odds_difference_patterns:
+            self.odds_difference_patterns[team] = {
+                'tight_matches': deque(maxlen=self.params.get('odds_diff_window', 8)),      # Close odds differences
+                'moderate_matches': deque(maxlen=self.params.get('odds_diff_window', 8)),   # Moderate differences
+                'heavy_favorite': deque(maxlen=self.params.get('odds_diff_window', 8)),     # Team heavily favored
+                'heavy_underdog': deque(maxlen=self.params.get('odds_diff_window', 8)),     # Team heavily underdog
+                'equal_strength': deque(maxlen=self.params.get('odds_diff_window', 8)),     # Very equal odds
+            }
+        
+        team_odds = odds[0] if is_home else odds[2]
+        opponent_odds = odds[2] if is_home else odds[0]
+        
+        # Calculate odds difference (lower odds = stronger team)
+        # If team_odds < opponent_odds, team is favored
+        odds_ratio = team_odds / opponent_odds if opponent_odds > 0 else 1.0
+        
+        # Convert result to team perspective
+        if is_home:
+            team_result = 'W' if result == '0' else 'D' if result == '1' else 'L'
+        else:
+            team_result = 'W' if result == '2' else 'D' if result == '1' else 'L'
+        
+        patterns = self.odds_difference_patterns[team]
+        
+        # Categorize match based on odds difference
+        tight_threshold = self.params.get('odds_diff_threshold_tight', 0.3)
+        moderate_threshold = self.params.get('odds_diff_threshold_moderate', 0.7)
+        
+        # Calculate normalized odds difference (0 = equal, 1 = maximum difference)
+        if odds_ratio <= 1.0:  # Team is favored
+            odds_diff = (1.0 - odds_ratio)  # How much favored (0 = equal, higher = more favored)
+        else:  # Team is underdog
+            odds_diff = (odds_ratio - 1.0)  # How much underdog (0 = equal, higher = more underdog)
+        
+        # Store in appropriate category
+        if abs(odds_diff) <= tight_threshold:  # Very close odds
+            patterns['equal_strength'].append(team_result)
+            patterns['tight_matches'].append(team_result)
+        elif abs(odds_diff) <= moderate_threshold:  # Moderate difference
+            patterns['moderate_matches'].append(team_result)
+        else:  # Large difference
+            if odds_ratio <= 1.0:  # Team heavily favored
+                patterns['heavy_favorite'].append(team_result)
+            else:  # Team heavily underdog
+                patterns['heavy_underdog'].append(team_result)
+
+    def update_team_odds_history(self, team, opponent, odds, is_home):
+        """Track historical odds for each team to analyze patterns"""
+        if team not in self.team_odds_history:
+            self.team_odds_history[team] = {
+                'odds_history': deque(maxlen=self.params.get('odds_diff_window', 8)),
+                'performance_vs_odds': deque(maxlen=self.params.get('odds_diff_window', 8)),
+                'odds_vs_results': deque(maxlen=self.params.get('odds_diff_window', 8))
+            }
+        
+        team_odds = odds[0] if is_home else odds[2]
+        opponent_odds = odds[2] if is_home else odds[0]
+        
+        history = self.team_odds_history[team]
+        
+        # Store odds information
+        odds_info = {
+            'team_odds': team_odds,
+            'opponent_odds': opponent_odds,
+            'odds_ratio': team_odds / opponent_odds if opponent_odds > 0 else 1.0,
+            'is_home': is_home
+        }
+        
+        history['odds_history'].append(odds_info)
+
+    def get_odds_difference_factor(self, team_name, opponent_name, current_odds, is_home):
+        """Analyze team's historical performance in similar odds difference scenarios"""
+        if team_name not in self.odds_difference_patterns:
+            return 0.5  # Neutral if no history
+        
+        patterns = self.odds_difference_patterns[team_name]
+        
+        # Calculate current odds difference
+        team_odds = current_odds[0] if is_home else current_odds[2]
+        opponent_odds = current_odds[2] if is_home else current_odds[0]
+        
+        current_odds_ratio = team_odds / opponent_odds if opponent_odds > 0 else 1.0
+        
+        # Determine which pattern to use based on current odds difference
+        tight_threshold = self.params.get('odds_diff_threshold_tight', 0.3)
+        moderate_threshold = self.params.get('odds_diff_threshold_moderate', 0.7)
+        
+        if current_odds_ratio <= 1.0:  # Team is favored
+            current_odds_diff = (1.0 - current_odds_ratio)
+        else:  # Team is underdog
+            current_odds_diff = (current_odds_ratio - 1.0)
+        
+        # Select relevant historical pattern
+        if abs(current_odds_diff) <= tight_threshold:
+            # Equal strength match - use equal strength and tight match history
+            relevant_results = list(patterns['equal_strength']) + list(patterns['tight_matches'])
+        elif abs(current_odds_diff) <= moderate_threshold:
+            # Moderate difference - use moderate match history
+            relevant_results = list(patterns['moderate_matches'])
+        else:
+            # Large difference
+            if current_odds_ratio <= 1.0:  # Team heavily favored
+                relevant_results = list(patterns['heavy_favorite'])
+            else:  # Team heavily underdog
+                relevant_results = list(patterns['heavy_underdog'])
+        
+        if not relevant_results:
+            return 0.5  # No relevant history
+        
+        # Calculate success rate in similar odds scenarios
+        wins = relevant_results.count('W')
+        draws = relevant_results.count('D')
+        total = len(relevant_results)
+        
+        if total == 0:
+            return 0.5
+        
+        # Weight wins higher than draws, but include draws as partial success
+        success_rate = (wins * 1.0 + draws * 0.3) / total
+        
+        # Apply odds difference sensitivity
+        sensitivity = self.params.get('odds_diff_sensitivity', 0.5)
+        
+        # If team has good history in this odds scenario, boost confidence
+        if success_rate > 0.6:  # Good historical performance
+            if abs(current_odds_diff) <= tight_threshold:
+                boost = self.params.get('equal_match_boost', 1.2)
+            elif current_odds_ratio <= 1.0:
+                boost = self.params.get('favorite_performance_boost', 1.1)
+            else:
+                boost = self.params.get('underdog_performance_boost', 1.3)
+            
+            success_rate *= boost
+        
+        # Apply sensitivity adjustment
+        adjusted_rate = 0.5 + (success_rate - 0.5) * sensitivity
+        
+        return min(0.95, max(0.05, adjusted_rate))
+
+    def get_team_odds_performance_summary(self, team_name):
+        """Get a summary of team's performance in different odds scenarios"""
+        if team_name not in self.odds_difference_patterns:
+            return None
+        
+        patterns = self.odds_difference_patterns[team_name]
+        summary = {}
+        
+        for scenario, results in patterns.items():
+            if len(results) > 0:
+                wins = results.count('W')
+                draws = results.count('D')
+                losses = results.count('L')
+                total = len(results)
+                
+                win_rate = wins / total
+                draw_rate = draws / total
+                success_rate = (wins + draws * 0.3) / total
+                
+                summary[scenario] = {
+                    'matches': total,
+                    'wins': wins,
+                    'draws': draws,
+                    'losses': losses,
+                    'win_rate': win_rate,
+                    'draw_rate': draw_rate,
+                    'success_rate': success_rate
+                }
+        
+        return summary
+
     # NEW: Enhanced form scoring methods
     def get_enhanced_team_form_score(self, team_name, opponent_name, is_home=True):
         """Calculate enhanced form score including opponent analysis"""
@@ -339,13 +601,19 @@ class EnhancedSuperOptimizedBettingSystem:
         # NEW: Add contextual form factor
         contextual_factor = self.get_contextual_form_factor(team_name, is_home)
         
+        # 🆕 NEW: Add odds difference factor
+        # Note: This will need current odds, so we'll add it in the confidence calculation
+        # For now, include a placeholder weight that can be used when odds are available
+        
         # Combine all factors using optimizable weights (with fallback defaults)
+        # Note: odds difference will be added separately in confidence calculation
         enhanced_form = (
             base_form * self.params.get('base_form_weight', 0.4) +                    # Traditional form
             opponent_factor * self.params.get('opponent_pattern_weight', 0.25) +     # Opponent patterns 
             h2h_factor * self.params.get('head_to_head_weight', 0.15) +              # Head-to-head
             tendency_factor * self.params.get('tendency_weight', 0.1) +              # Recent tendencies
             contextual_factor * self.params.get('contextual_weight', 0.1)            # Contextual form
+            # odds_diff_factor will be added in calculate_match_confidence()
         )
         
         return min(0.95, max(0.05, enhanced_form))
@@ -539,13 +807,38 @@ class EnhancedSuperOptimizedBettingSystem:
         # Enhanced team consistency with opponent context
         team_consistency = self.get_enhanced_team_consistency(home_team, away_team)
         
-        # Combined confidence for each outcome
+        # 🆕 NEW: ODDS DIFFERENCE ANALYSIS
+        home_odds_diff_factor = self.get_odds_difference_factor(home_team, away_team, match_odds, True)
+        away_odds_diff_factor = self.get_odds_difference_factor(away_team, home_team, match_odds, False)
+        
+        # Convert odds difference factors to confidence adjustments
+        odds_diff_confidence = {
+            '0': home_odds_diff_factor,  # Home team confidence based on odds difference history
+            '1': 1.0 - abs(home_odds_diff_factor - away_odds_diff_factor),  # Draw more likely when factors are similar
+            '2': away_odds_diff_factor   # Away team confidence based on odds difference history
+        }
+        
+        # Normalize odds difference confidence
+        total_odds_diff = sum(odds_diff_confidence.values())
+        if total_odds_diff > 0:
+            for outcome in odds_diff_confidence:
+                odds_diff_confidence[outcome] /= total_odds_diff
+        
+        # Combined confidence for each outcome including odds difference analysis
+        odds_diff_weight = self.params.get('odds_diff_weight', 0.15)
+        
+        # Adjust other weights to account for odds difference weight
+        adjusted_odds_weight = self.params['odds_weight'] * (1.0 - odds_diff_weight)
+        adjusted_form_weight = self.params['form_weight'] * (1.0 - odds_diff_weight)
+        adjusted_team_weight = self.params['team_weight'] * (1.0 - odds_diff_weight)
+        
         combined_confidence = {}
         for outcome in ['0', '1', '2']:
             combined_confidence[outcome] = (
-                self.params['odds_weight'] * odds_confidence[outcome] +
-                self.params['form_weight'] * form_confidence[outcome] +
-                self.params['team_weight'] * team_consistency
+                adjusted_odds_weight * odds_confidence[outcome] +
+                adjusted_form_weight * form_confidence[outcome] +
+                adjusted_team_weight * team_consistency +
+                odds_diff_weight * odds_diff_confidence[outcome]  # 🆕 NEW: Odds difference factor
             )
         
         # Apply home bias adjustment in specific odds range
@@ -709,7 +1002,7 @@ class EnhancedSuperOptimizedBettingSystem:
         return count
 
     def generate_optimized_patterns(self, odds, teams):
-        """Generate optimized betting patterns"""
+        """Generate optimized betting patterns with diversity to avoid overfitting"""
         if len(odds) != 39 or len(teams) != 13:
             return []
         
@@ -721,7 +1014,7 @@ class EnhancedSuperOptimizedBettingSystem:
             confidence = self.calculate_match_confidence(teams, odds, i)
             match_confidences.append(confidence)
         
-        # Generate base patterns using different strategies
+        # Generate base patterns using different strategies with diversity
         strategies = [
             self.generate_high_confidence_patterns,
             self.generate_form_based_patterns,
@@ -737,13 +1030,15 @@ class EnhancedSuperOptimizedBettingSystem:
                 if pattern not in patterns:  # Deduplicate across all strategies
                     patterns.append(pattern)
         
-        # Fill remaining slots with random confident patterns
+        # Fill remaining slots with diverse confident patterns
         while len(patterns) < self.params['default_patterns']:
             pattern = self.generate_confident_pattern(match_confidences)
             if pattern not in patterns:
                 patterns.append(pattern)
         
         return patterns[:self.params['default_patterns']]
+
+
 
     def generate_high_confidence_patterns(self, match_confidences, count):
         """Generate patterns based on highest confidence predictions"""
@@ -863,7 +1158,11 @@ class EnhancedSuperOptimizedBettingSystem:
 
     def analyze_week(self, filename: str) -> dict:
         """Analyze a specific week with enhanced super optimized predictions"""
-        filepath = os.path.join("data", filename)
+        # Handle both full path and just filename
+        if filename.startswith("data/"):
+            filepath = filename
+        else:
+            filepath = os.path.join("data", filename)
         
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
@@ -897,7 +1196,10 @@ class EnhancedSuperOptimizedBettingSystem:
                 'Head-to-head historical records',
                 'Team tendency tracking',
                 'Contextual form analysis',
-                'Deep opponent awareness'
+                'Deep opponent awareness',
+                '🆕 Odds difference analysis',
+                '🆕 Equal match performance tracking',
+                '🆕 Favorite/underdog pattern analysis'
             ]
         }
 

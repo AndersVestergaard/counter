@@ -58,7 +58,17 @@ class SmartOptimizer:
                 
                 # Form confidence sensitivity (optimizable)
                 'form_sensitivity': 0.4,
-                'draw_sensitivity': 0.25
+                'draw_sensitivity': 0.25,
+                
+                # 🆕 NEW: ODDS DIFFERENCE ANALYSIS PARAMETERS (optimizable)
+                'odds_diff_weight': 0.15,        # Weight for odds difference analysis in confidence
+                'equal_match_boost': 1.2,        # Boost for teams that perform well in equal matches
+                'favorite_performance_boost': 1.1, # Boost for teams that perform well as favorites
+                'underdog_performance_boost': 1.3, # Boost for teams that perform well as underdogs
+                'odds_diff_threshold_tight': 0.3,  # Threshold for "tight" odds differences
+                'odds_diff_threshold_moderate': 0.7, # Threshold for "moderate" odds differences  
+                'odds_diff_sensitivity': 0.5,    # Sensitivity to odds difference patterns
+                'odds_diff_window': 8,           # Number of historical matches to analyze for odds patterns
             }
         
         # Merge optimized parameters with defaults (ensures all parameters are present)
@@ -101,6 +111,16 @@ class SmartOptimizer:
             # NEW: Form confidence sensitivity
             'form_sensitivity': (0.1, 0.8),         # Form difference sensitivity
             'draw_sensitivity': (0.1, 0.5),         # Draw likelihood sensitivity
+            
+            # 🆕 NEW: ODDS DIFFERENCE ANALYSIS BOUNDS (optimizable ranges)
+            'odds_diff_weight': (0.05, 0.4),        # Weight for odds difference analysis
+            'equal_match_boost': (0.8, 2.0),        # Boost for equal match performers  
+            'favorite_performance_boost': (0.8, 1.8), # Boost for strong favorites
+            'underdog_performance_boost': (0.9, 2.5), # Boost for strong underdogs
+            'odds_diff_threshold_tight': (0.1, 0.6), # Tight odds difference threshold
+            'odds_diff_threshold_moderate': (0.4, 1.2), # Moderate odds difference threshold
+            'odds_diff_sensitivity': (0.2, 1.0),     # Sensitivity to odds patterns
+            'odds_diff_window': (4, 15),             # Historical window size
         }
         
         # Multi-objective optimization weights
@@ -145,7 +165,7 @@ class SmartOptimizer:
         return True
     
     def evaluate_parameters(self, params):
-        """Evaluate a parameter set with multi-objective scoring: winnings + win rate"""
+        """Evaluate a parameter set with multi-objective scoring: winnings + win rate + weekly weight capping"""
         try:
             # Validate all weights (including new enhanced parameters)
             if not self.validate_all_weights(params):
@@ -158,6 +178,7 @@ class SmartOptimizer:
             total_cost = 0
             weeks_with_wins = 0  # Count weeks where we got 12+ correct
             total_weeks = 0
+            weekly_contributions = []  # Track each week's contribution to prevent overfitting
             
             for test_data in self.test_files:
                 filename = test_data['filename']
@@ -175,16 +196,37 @@ class SmartOptimizer:
                 # Track best performance for this week
                 week_best_correct = 0
                 week_winnings = 0
+                week_cost = len(patterns)
                 
                 for pattern in patterns:
                     winnings = calculate_winnings(pattern, result, penge_values)
-                    total_winnings += winnings
-                    total_cost += 1
                     week_winnings += winnings
                     
                     # Count correct predictions for this pattern
                     correct_count = sum(1 for pred, actual in zip(pattern, result) if pred == actual)
                     week_best_correct = max(week_best_correct, correct_count)
+                
+                # 🎯 WEEKLY WEIGHT CAPPING: Limit influence of weeks with excessive winnings
+                week_profit = week_winnings - week_cost
+                
+                # Cap weekly profit contribution to prevent overfitting on "easy" weeks
+                max_weekly_profit = 10000  # Cap at 10k points per week max influence
+                capped_week_profit = min(week_profit, max_weekly_profit) if week_profit > 0 else week_profit
+                
+                # Also cap weekly loss to prevent one bad week from dominating
+                min_weekly_loss = -2000  # Don't let one week contribute more than 2k loss
+                capped_week_profit = max(capped_week_profit, min_weekly_loss)
+                
+                # Track for balanced optimization
+                weekly_contributions.append({
+                    'filename': filename,
+                    'original_profit': week_profit,
+                    'capped_profit': capped_week_profit,
+                    'patterns_count': len(patterns)
+                })
+                
+                total_winnings += week_winnings
+                total_cost += week_cost
                 
                 # Count this week as a win if best pattern got 12+ correct
                 if week_best_correct >= 12:
@@ -193,17 +235,24 @@ class SmartOptimizer:
             if total_cost == 0 or total_weeks == 0:
                 return -10000
             
-            # Calculate metrics
+            # 🎯 NEW: Calculate metrics using CAPPED weekly contributions for balanced optimization
+            capped_total_profit = sum(week['capped_profit'] for week in weekly_contributions)
             net_profit = total_winnings - total_cost
             win_rate = weeks_with_wins / total_weeks
             
-            # Multi-objective composite score
-            # Normalize winnings (divide by 1000 to make it comparable to win_rate 0-1)
-            normalized_winnings = net_profit / 1000.0
+            # Multi-objective composite score using CAPPED profits
+            # This prevents weeks with 50+ winning patterns from dominating optimization
+            normalized_capped_profit = capped_total_profit / 1000.0
             
-            # Composite score: balance between winnings and win frequency
-            composite_score = (self.winnings_weight * normalized_winnings + 
+            # Composite score: balance between CAPPED winnings and win frequency
+            composite_score = (self.winnings_weight * normalized_capped_profit + 
                              self.win_rate_weight * win_rate * 10000)  # Scale win_rate up
+            
+            # Additional diversity bonus: reward systems that perform well across many weeks
+            weeks_with_positive_capped_profit = sum(1 for week in weekly_contributions if week['capped_profit'] > 0)
+            diversity_bonus = (weeks_with_positive_capped_profit / total_weeks) * 1000  # Up to 1000 bonus
+            
+            composite_score += diversity_bonus * 0.1  # 10% weight for diversity
             
             return composite_score
             
@@ -229,7 +278,7 @@ class SmartOptimizer:
         large_jump = random.random() < 0.8
         
         for param in to_change:
-            if param in ['streak_length', 'default_patterns']:
+            if param in ['streak_length', 'default_patterns', 'odds_diff_window']:
                 # Integer parameters
                 min_val, max_val = self.param_bounds[param]
                 current = new_params[param]
@@ -479,7 +528,7 @@ class SmartOptimizer:
         })
     
     def _evaluate_parameters_worker(self, params, test_files):
-        """Worker-specific parameter evaluation function with multi-objective scoring"""
+        """Worker-specific parameter evaluation function with multi-objective scoring + weekly weight capping"""
         try:
             # Validate all weights (including new enhanced parameters)
             if not self.validate_all_weights(params):
@@ -492,6 +541,7 @@ class SmartOptimizer:
             total_cost = 0
             weeks_with_wins = 0  # Count weeks where we got 12+ correct
             total_weeks = 0
+            weekly_contributions = []  # Track each week's contribution to prevent overfitting
             
             for test_data in test_files:
                 filename = test_data['filename']
@@ -508,15 +558,38 @@ class SmartOptimizer:
                 
                 # Track best performance for this week
                 week_best_correct = 0
+                week_winnings = 0
+                week_cost = len(patterns)
                 
                 for pattern in patterns:
                     winnings = calculate_winnings(pattern, result, penge_values)
-                    total_winnings += winnings
-                    total_cost += 1
+                    week_winnings += winnings
                     
                     # Count correct predictions for this pattern
                     correct_count = sum(1 for pred, actual in zip(pattern, result) if pred == actual)
                     week_best_correct = max(week_best_correct, correct_count)
+                
+                # 🎯 WEEKLY WEIGHT CAPPING: Limit influence of weeks with excessive winnings
+                week_profit = week_winnings - week_cost
+                
+                # Cap weekly profit contribution to prevent overfitting on "easy" weeks
+                max_weekly_profit = 10000  # Cap at 10k points per week max influence
+                capped_week_profit = min(week_profit, max_weekly_profit) if week_profit > 0 else week_profit
+                
+                # Also cap weekly loss to prevent one bad week from dominating
+                min_weekly_loss = -2000  # Don't let one week contribute more than 2k loss
+                capped_week_profit = max(capped_week_profit, min_weekly_loss)
+                
+                # Track for balanced optimization
+                weekly_contributions.append({
+                    'filename': filename,
+                    'original_profit': week_profit,
+                    'capped_profit': capped_week_profit,
+                    'patterns_count': len(patterns)
+                })
+                
+                total_winnings += week_winnings
+                total_cost += week_cost
                 
                 # Count this week as a win if best pattern got 12+ correct
                 if week_best_correct >= 12:
@@ -525,17 +598,24 @@ class SmartOptimizer:
             if total_cost == 0 or total_weeks == 0:
                 return -10000
             
-            # Calculate metrics
+            # 🎯 NEW: Calculate metrics using CAPPED weekly contributions for balanced optimization
+            capped_total_profit = sum(week['capped_profit'] for week in weekly_contributions)
             net_profit = total_winnings - total_cost
             win_rate = weeks_with_wins / total_weeks
             
-            # Multi-objective composite score
-            # Normalize winnings (divide by 1000 to make it comparable to win_rate 0-1)
-            normalized_winnings = net_profit / 1000.0
+            # Multi-objective composite score using CAPPED profits
+            # This prevents weeks with 50+ winning patterns from dominating optimization
+            normalized_capped_profit = capped_total_profit / 1000.0
             
-            # Composite score: balance between winnings and win frequency
-            composite_score = (self.winnings_weight * normalized_winnings + 
+            # Composite score: balance between CAPPED winnings and win frequency
+            composite_score = (self.winnings_weight * normalized_capped_profit + 
                              self.win_rate_weight * win_rate * 10000)  # Scale win_rate up
+            
+            # Additional diversity bonus: reward systems that perform well across many weeks
+            weeks_with_positive_capped_profit = sum(1 for week in weekly_contributions if week['capped_profit'] > 0)
+            diversity_bonus = (weeks_with_positive_capped_profit / total_weeks) * 1000  # Up to 1000 bonus
+            
+            composite_score += diversity_bonus * 0.1  # 10% weight for diversity
             
             return composite_score
             
