@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Comprehensive Winnings Test for FULL DATASET OPTIMIZED Betting System
-Tests against ALL available data files with results using +3,746.2% ROI parameters
+Comprehensive Winnings Test for ENHANCED SUPER OPTIMIZED Betting System
+Tests against ALL available data files with results using enhanced opponent analysis
 
-FULL DATASET OPTIMIZATION WINNER PARAMETERS (NO OVERFITTING):
-- odds_weight: 0.393
-- team_weight: 0.276  
-- form_weight: 0.335
-- winning_streak_boost: 2.898
-- home_bias_factor: 0.868
+ENHANCED FEATURES:
+- Opponent pattern analysis: Track what teams do against specific types of opponents
+- Head-to-head patterns: Historical matchups between specific teams  
+- Opponent tendencies: Track opponent draws/wins/losses patterns
+- Contextual form: Performance against similar strength opponents
+- Form momentum: Trends and momentum beyond simple streaks
 """
 
 import json
 import os
 import sys
-from super_optimized_system import SuperOptimizedBettingSystem
+from super_optimized_system import EnhancedSuperOptimizedBettingSystem
 
 
 def calculate_winnings(bet_pattern, actual_result, penge_values):
@@ -93,14 +93,14 @@ def load_all_complete_test_files():
 def test_all_files():
     """Test the mega optimized system against all available test files"""
     
-    print("🚀 COMPREHENSIVE WINNINGS TEST - FULL DATASET OPTIMIZED SYSTEM")
+    print("🚀 COMPREHENSIVE WINNINGS TEST - ENHANCED SUPER OPTIMIZED SYSTEM")
     print("=" * 80)
-    print("Testing against ALL available data files with FULL DATASET OPTIMIZED parameters...")
-    print("🏆 Expected performance: +3,746.2% ROI")
+    print("Testing against ALL available data files with ENHANCED OPPONENT ANALYSIS...")
+    print("🏆 Expected performance: Same high ROI + Better opponent awareness")
     print()
     
-    # Initialize the mega optimized system
-    system = SuperOptimizedBettingSystem(random_seed=43)
+    # Initialize the enhanced mega optimized system
+    system = EnhancedSuperOptimizedBettingSystem(random_seed=43)
     
     # Load all complete test files
     test_files = load_all_complete_test_files()

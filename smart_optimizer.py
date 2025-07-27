@@ -13,7 +13,7 @@ import time
 import random
 import multiprocessing as mp
 from multiprocessing import Process, Queue, cpu_count
-from comprehensive_winnings_test import SuperOptimizedBettingSystem, calculate_winnings, load_test_file, load_all_complete_test_files
+from comprehensive_winnings_test import EnhancedSuperOptimizedBettingSystem, calculate_winnings, load_test_file, load_all_complete_test_files
 
 
 class SmartOptimizer:
@@ -89,7 +89,7 @@ class SmartOptimizer:
             if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
                 return -10000  # Invalid weight combination
             
-            system = SuperOptimizedBettingSystem(random_seed=42, verbose=False)
+            system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)
             system.params.update(params)
             
             total_winnings = 0
@@ -205,7 +205,7 @@ class SmartOptimizer:
             if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
                 return None
             
-            system = SuperOptimizedBettingSystem(random_seed=42, verbose=False)
+            system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)
             system.params.update(params)
             
             total_winnings = 0
@@ -423,7 +423,7 @@ class SmartOptimizer:
             if not self.validate_weights(params['odds_weight'], params['team_weight'], params['form_weight']):
                 return -10000  # Invalid weight combination
             
-            system = SuperOptimizedBettingSystem(random_seed=42, verbose=False)
+            system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)
             system.params.update(params)
             
             total_winnings = 0
