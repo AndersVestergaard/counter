@@ -1,0 +1,42 @@
+{
+  "optimized_parameters": {
+    "odds_weight": 0.05,
+    "team_weight": 0.2756585680340483,
+    "form_weight": 0.6767049107090509,
+    "default_patterns": 111,
+    "high_confidence_threshold": 0.65,
+    "medium_confidence_threshold": 0.55,
+    "max_confidence": 0.95,
+    "form_win_weight": 3.0,
+    "form_draw_weight": 1.0,
+    "form_loss_weight": 0.0,
+    "form_window": 5,
+    "home_bias_min_odds": 1.3,
+    "home_bias_max_odds": 5.942420497491299,
+    "home_bias_factor": 0.7813845649913124,
+    "winning_streak_boost": 2.785290612055408,
+    "losing_streak_penalty": 0.9924849223538273,
+    "streak_length": 1,
+    "home_form_boost": 0.7515716905453693,
+    "away_form_boost": 0.33041212343107756,
+    "strong_form_threshold": 0.7
+  },
+  "winnings_amount": 341454.5,
+  "improvements_found": 55,
+  "optimization_timestamp": "2025-07-27T14:23:07.091469",
+  "dataset_size": 73,
+  "optimization_weights": {
+    "winnings_weight": 0.6,
+    "win_rate_weight": 0.4
+  },
+  "detailed_metrics": {
+    "total_winnings": 349557.5,
+    "total_cost": 8103,
+    "net_profit": 341454.5,
+    "win_rate": 0.1917808219178082,
+    "weeks_with_wins": 14,
+    "total_weeks": 73,
+    "roi": 4213.92694063927
+  },
+  "description": "Multi-objective optimizer: 19.2% win rate, +341,454 net profit from 55 improvements"
+}
