@@ -27,8 +27,25 @@ from collections import defaultdict, deque
 
 
 class EnhancedSuperOptimizedBettingSystem:
+    def get_parameter_bounds(self):
+        """Define parameter bounds for validation"""
+        return {
+            'odds_weight': (0.05, 4.0),
+            'team_weight': (0.01, 2.0),
+            'form_weight': (0.001, 2.0),
+            'default_patterns': (75, 75),  # Fixed to 75 patterns
+            'home_bias_max_odds': (0.5, 10.0),
+            'home_bias_factor': (0.3, 2.0),
+            'winning_streak_boost': (0.5, 3.0),
+            'losing_streak_penalty': (0.1, 2.0),
+            'streak_length': (1, 5),
+            'home_form_boost': (0.3, 3.0),
+            'away_form_boost': (0.3, 3.0),
+            # Add other bounds as needed
+        }
+
     def load_optimized_parameters(self, verbose=True):
-        """Load the latest optimized parameters from file"""
+        """Load the latest optimized parameters from file with validation"""
         import glob
         
         # Find the latest optimized parameters file
@@ -46,12 +63,37 @@ class EnhancedSuperOptimizedBettingSystem:
                 data = json.load(f)
             
             params = data.get('optimized_parameters', {})
-            roi = data.get('roi_percentage', 0)
+            roi = data.get('roi_percentage', data.get('winnings_amount', 0))
             
             if verbose:
                 print(f"   ✅ Loaded optimized parameters from: {latest_file}")
                 print(f"   📊 Expected ROI: {roi:+.1f}%")
-            return params
+            
+            # Validate parameters against bounds
+            param_bounds = self.get_parameter_bounds()
+            validated_params = {}
+            warnings = []
+            
+            for param_name, param_value in params.items():
+                if param_name in param_bounds:
+                    min_val, max_val = param_bounds[param_name]
+                    if min_val <= param_value <= max_val:
+                        validated_params[param_name] = param_value
+                    else:
+                        # Parameter outside current bounds - constrain it
+                        constrained_value = max(min_val, min(max_val, param_value))
+                        validated_params[param_name] = constrained_value
+                        warnings.append(f"{param_name}: {param_value} → {constrained_value} (constrained to bounds)")
+                else:
+                    # Parameter not in bounds (new parameter) - use as-is
+                    validated_params[param_name] = param_value
+            
+            if warnings and verbose:
+                print(f"   ⚠️  Parameter constraints applied:")
+                for warning in warnings:
+                    print(f"      {warning}")
+            
+            return validated_params
             
         except Exception as e:
             if verbose:
@@ -1249,12 +1291,21 @@ def main():
     if len(results['bets']) > 10:
         print(f"   ... and {len(results['bets']) - 10} more")
     
-    # Save results
-    output_file = f"super_optimized_suggestions_{filename}"
+    # Save results to the suggestions data directory
+    # Create directory if it doesn't exist
+    suggestions_dir = "super_optimized_suggestions_data"
+    os.makedirs(suggestions_dir, exist_ok=True)
+    
+    # Extract just the filename without directory path
+    base_filename = os.path.basename(filename)
+    
+    # Save with filename that the analyze program expects
+    output_file = os.path.join(suggestions_dir, base_filename)
     try:
         with open(output_file, 'w') as f:
             json.dump(results, f, indent=2)
-        print(f"\nResults saved to {output_file}")
+        print(f"\n✅ Results saved to {output_file}")
+        print(f"🔍 Run analysis with: python3 analyze_super_optimized_suggestions.py {base_filename[5:-5] if base_filename.startswith('test-') and base_filename.endswith('.json') else base_filename[:-5] if base_filename.endswith('.json') else base_filename}")
     except Exception as e:
         print(f"Could not save results: {e}")
 

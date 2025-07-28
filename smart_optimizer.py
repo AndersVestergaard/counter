@@ -18,6 +18,47 @@ from comprehensive_winnings_test import EnhancedSuperOptimizedBettingSystem, cal
 
 class SmartOptimizer:
     def __init__(self):
+        # Define parameter bounds first (needed for validation)
+        self.param_bounds = {
+            'odds_weight': (0.05, 4.0),
+            'team_weight': (0.01, 2.0),
+            'form_weight': (0.001, 2.0),
+            'default_patterns': (75, 75),  # (25, 125), Number of bets to make
+            'home_bias_max_odds': (0.5, 10.0),
+            'home_bias_factor': (0.3, 2.0),
+            'winning_streak_boost': (0.5, 3.0),
+            'losing_streak_penalty': (0.1, 2.0),
+            'streak_length': (1, 5),
+            'home_form_boost': (0.3, 3.0),
+            'away_form_boost': (0.3, 3.0),
+            
+            # NEW: Enhanced opponent analysis weights (optimizable ranges)
+            'base_form_weight': (0.1, 0.8),         # Traditional form weight
+            'opponent_pattern_weight': (0.05, 0.5), # Opponent patterns weight
+            'head_to_head_weight': (0.05, 0.4),     # Head-to-head history weight
+            'tendency_weight': (0.02, 0.3),         # Recent tendencies weight
+            'contextual_weight': (0.02, 0.3),       # Contextual form weight
+            
+            # NEW: Enhanced consistency weights (should sum to ~1.0)
+            'consistency_base_weight': (0.2, 0.8),  # Base consistency weight
+            'consistency_h2h_weight': (0.1, 0.6),   # H2H consistency weight
+            'consistency_opponent_weight': (0.1, 0.5), # Opponent pattern consistency weight
+            
+            # NEW: Form confidence sensitivity
+            'form_sensitivity': (0.1, 0.8),         # Form difference sensitivity
+            'draw_sensitivity': (0.1, 0.5),         # Draw likelihood sensitivity
+            
+            # 🆕 NEW: ODDS DIFFERENCE ANALYSIS BOUNDS (optimizable ranges)
+            'odds_diff_weight': (0.05, 0.4),        # Weight for odds difference analysis
+            'equal_match_boost': (0.8, 2.0),        # Boost for equal match performers  
+            'favorite_performance_boost': (0.8, 1.8), # Boost for strong favorites
+            'underdog_performance_boost': (0.9, 2.5), # Boost for strong underdogs
+            'odds_diff_threshold_tight': (0.1, 0.6), # Tight odds difference threshold
+            'odds_diff_threshold_moderate': (0.4, 1.2), # Moderate odds difference threshold
+            'odds_diff_sensitivity': (0.2, 1.0),     # Sensitivity to odds patterns
+            'odds_diff_window': (4, 15),             # Historical window size
+        }
+        
         # Load optimized parameters from file if available
         optimized_params = self.load_latest_optimized_parameters()
         
@@ -75,53 +116,37 @@ class SmartOptimizer:
         if optimized_params:
             # Start with defaults, then update with optimized values
             self.best_params = default_params.copy()
-            self.best_params.update(optimized_params)
+            
+            # Validate loaded parameters against current bounds
+            validated_params = {}
+            warnings = []
+            for param_name, param_value in optimized_params.items():
+                if param_name in self.param_bounds:
+                    min_val, max_val = self.param_bounds[param_name]
+                    if min_val <= param_value <= max_val:
+                        validated_params[param_name] = param_value
+                    else:
+                        # Parameter outside current bounds - use bounds constraint
+                        constrained_value = max(min_val, min(max_val, param_value))
+                        validated_params[param_name] = constrained_value
+                        warnings.append(f"{param_name}: {param_value} → {constrained_value} (constrained to bounds)")
+                else:
+                    # Parameter not in bounds (new parameter) - use as-is
+                    validated_params[param_name] = param_value
+            
+            self.best_params.update(validated_params)
+            
+            if warnings:
+                print(f"   ⚠️  Parameter constraints applied:")
+                for warning in warnings:
+                    print(f"      {warning}")
+            
             print(f"   ✅ Starting with optimized parameters from file (merged with new defaults)")
         else:
             # Use defaults only
             self.best_params = default_params
             print(f"   ⚠️  No optimized parameters found, using defaults")
-        
-        # Parameter bounds for optimization (MASSIVELY EXTREME search for 100k iterations)
-        self.param_bounds = {
-            'odds_weight': (0.05, 4.0),
-            'team_weight': (0.01, 2.0),
-            'form_weight': (0.001, 2.0),
-            'default_patterns': (25, 125),  # Number of bets to make
-            'home_bias_max_odds': (0.5, 10.0),
-            'home_bias_factor': (0.3, 2.0),
-            'winning_streak_boost': (0.5, 3.0),
-            'losing_streak_penalty': (0.1, 2.0),
-            'streak_length': (1, 5),
-            'home_form_boost': (0.3, 3.0),
-            'away_form_boost': (0.3, 3.0),
-            
-            # NEW: Enhanced opponent analysis weights (optimizable ranges)
-            'base_form_weight': (0.1, 0.8),         # Traditional form weight
-            'opponent_pattern_weight': (0.05, 0.5), # Opponent patterns weight
-            'head_to_head_weight': (0.05, 0.4),     # Head-to-head history weight
-            'tendency_weight': (0.02, 0.3),         # Recent tendencies weight
-            'contextual_weight': (0.02, 0.3),       # Contextual form weight
-            
-            # NEW: Enhanced consistency weights (should sum to ~1.0)
-            'consistency_base_weight': (0.2, 0.8),  # Base consistency weight
-            'consistency_h2h_weight': (0.1, 0.6),   # H2H consistency weight
-            'consistency_opponent_weight': (0.1, 0.5), # Opponent pattern consistency weight
-            
-            # NEW: Form confidence sensitivity
-            'form_sensitivity': (0.1, 0.8),         # Form difference sensitivity
-            'draw_sensitivity': (0.1, 0.5),         # Draw likelihood sensitivity
-            
-            # 🆕 NEW: ODDS DIFFERENCE ANALYSIS BOUNDS (optimizable ranges)
-            'odds_diff_weight': (0.05, 0.4),        # Weight for odds difference analysis
-            'equal_match_boost': (0.8, 2.0),        # Boost for equal match performers  
-            'favorite_performance_boost': (0.8, 1.8), # Boost for strong favorites
-            'underdog_performance_boost': (0.9, 2.5), # Boost for strong underdogs
-            'odds_diff_threshold_tight': (0.1, 0.6), # Tight odds difference threshold
-            'odds_diff_threshold_moderate': (0.4, 1.2), # Moderate odds difference threshold
-            'odds_diff_sensitivity': (0.2, 1.0),     # Sensitivity to odds patterns
-            'odds_diff_window': (4, 15),             # Historical window size
-        }
+
         
         # Multi-objective optimization weights
         self.winnings_weight = 0.7  # Weight for total winnings

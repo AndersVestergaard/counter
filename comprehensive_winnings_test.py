@@ -99,8 +99,8 @@ def test_all_files():
     print("🏆 Expected performance: Same high ROI + Better opponent awareness")
     print()
     
-    # Initialize the enhanced mega optimized system
-    system = EnhancedSuperOptimizedBettingSystem(random_seed=43)
+    # Initialize the enhanced mega optimized system (using seed 42 for consistency)
+    system = EnhancedSuperOptimizedBettingSystem(random_seed=42)
     
     # Load all complete test files
     test_files = load_all_complete_test_files()
