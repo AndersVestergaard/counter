@@ -24,25 +24,13 @@ import random
 import itertools
 import statistics
 from collections import defaultdict, deque
+from parameter_bounds import get_parameter_bounds, get_default_parameters
 
 
 class EnhancedSuperOptimizedBettingSystem:
     def get_parameter_bounds(self):
-        """Define parameter bounds for validation"""
-        return {
-            'odds_weight': (0.05, 4.0),
-            'team_weight': (0.01, 2.0),
-            'form_weight': (0.001, 2.0),
-            'default_patterns': (75, 75),  # Fixed to 75 patterns
-            'home_bias_max_odds': (0.5, 10.0),
-            'home_bias_factor': (0.3, 2.0),
-            'winning_streak_boost': (0.5, 3.0),
-            'losing_streak_penalty': (0.1, 2.0),
-            'streak_length': (1, 5),
-            'home_form_boost': (0.3, 3.0),
-            'away_form_boost': (0.3, 3.0),
-            # Add other bounds as needed
-        }
+        """Define parameter bounds for validation using shared configuration"""
+        return get_parameter_bounds()
 
     def load_optimized_parameters(self, verbose=True):
         """Load the latest optimized parameters from file with validation"""
@@ -110,135 +98,15 @@ class EnhancedSuperOptimizedBettingSystem:
         optimized_params = self.load_optimized_parameters(verbose=verbose)
         
         if optimized_params:
-            # Start with defaults, then update with optimized values to ensure all parameters exist
-            self.params = {
-            # Core weights (FULL DATASET OPTIMIZATION - NO OVERFITTING)
-            'odds_weight': 0.393,            # Full dataset optimized: Balanced odds
-            'team_weight': 0.276,            # Full dataset optimized: Reduced team emphasis
-            'form_weight': 0.335,            # Full dataset optimized: High form emphasis!
-            
-            # Pattern generation
-            'default_patterns': 60,          # Optimal count (restored)
-            
-            # Confidence thresholds
-            'high_confidence_threshold': 0.65,
-            'medium_confidence_threshold': 0.55,
-            'max_confidence': 0.95,
-            
-            # Form analysis (CRITICAL FOR GOOD PERFORMANCE)
-            'form_win_weight': 3.0,          # Wins worth 3 points
-            'form_draw_weight': 1.0,         # Draws worth 1 point  
-            'form_loss_weight': 0.0,         # Losses worth 0 points
-            'form_window': 5,                # Look at last 5 games
-            
-            # Home bias parameters (FULL DATASET OPTIMIZED)
-            'home_bias_min_odds': 1.3,       # Don't apply below this
-            'home_bias_max_odds': 2.5,       # Keep original range
-            'home_bias_factor': 0.868,       # Full dataset optimized: Fine-tuned
-            
-            # Streak adjustments (FULL DATASET OPTIMIZED: EVEN BIGGER STREAKS!)
-            'winning_streak_boost': 2.898,   # FULL DATASET OPTIMIZED: Massive winning streak boost!
-            'losing_streak_penalty': 0.85,   # Keep penalty same
-            'streak_length': 3,              # Keep same minimum
-            
-            # Form boosts
-            'home_form_boost': 1.1,          # Slight home advantage 
-            'away_form_boost': 1.1,          # Equal away boost
-            'strong_form_threshold': 0.7,    # Threshold for "strong" form
-            
-            # NEW: Enhanced opponent analysis weights (optimizable)
-            'base_form_weight': 0.4,         # Traditional form weight in enhanced score
-            'opponent_pattern_weight': 0.25, # Opponent patterns weight
-            'head_to_head_weight': 0.15,     # Head-to-head history weight
-            'tendency_weight': 0.1,          # Recent tendencies weight
-            'contextual_weight': 0.1,        # Contextual form weight
-            
-            # NEW: Enhanced consistency weights (optimizable)
-            'consistency_base_weight': 0.5,  # Base consistency weight
-            'consistency_h2h_weight': 0.3,   # H2H consistency weight
-            'consistency_opponent_weight': 0.2, # Opponent pattern consistency weight
-            
-            # NEW: Form confidence sensitivity (optimizable)
-            'form_sensitivity': 0.4,         # Form difference sensitivity (was 0.3)
-            'draw_sensitivity': 0.25,        # Draw likelihood sensitivity
-            
-            # 🆕 NEW: ODDS DIFFERENCE ANALYSIS PARAMETERS (optimizable)
-            'odds_diff_weight': 0.15,        # Weight for odds difference analysis in confidence
-            'equal_match_boost': 1.2,        # Boost for teams that perform well in equal matches
-            'favorite_performance_boost': 1.1, # Boost for teams that perform well as favorites
-            'underdog_performance_boost': 1.3, # Boost for teams that perform well as underdogs
-            'odds_diff_threshold_tight': 0.3,  # Threshold for "tight" odds differences
-            'odds_diff_threshold_moderate': 0.7, # Threshold for "moderate" odds differences  
-            'odds_diff_sensitivity': 0.5,    # Sensitivity to odds difference patterns
-            'odds_diff_window': 8,           # Number of historical matches to analyze for odds patterns
-            }
+            # Start with shared defaults, then update with optimized values to ensure all parameters exist
+            self.params = get_default_parameters()
             # Now update with optimized values
             self.params.update(optimized_params)
             self.using_optimized = True
         else:
-            # FALLBACK DEFAULT PARAMETERS
+            # FALLBACK DEFAULT PARAMETERS using shared configuration
             self.using_optimized = False
-            self.params = {
-            # Core weights (FULL DATASET OPTIMIZATION - NO OVERFITTING)
-            'odds_weight': 0.393,            # Full dataset optimized: Balanced odds
-            'team_weight': 0.276,            # Full dataset optimized: Reduced team emphasis
-            'form_weight': 0.335,            # Full dataset optimized: High form emphasis!
-            
-            # Pattern generation
-            'default_patterns': 60,          # Optimal count (restored)
-            
-            # Confidence thresholds
-            'high_confidence_threshold': 0.65,
-            'medium_confidence_threshold': 0.55,
-            'max_confidence': 0.95,
-            
-            # Form analysis (CRITICAL FOR GOOD PERFORMANCE)
-            'form_win_weight': 3.0,          # Wins worth 3 points
-            'form_draw_weight': 1.0,         # Draws worth 1 point  
-            'form_loss_weight': 0.0,         # Losses worth 0 points
-            'form_window': 5,                # Look at last 5 games
-            
-            # Home bias parameters (FULL DATASET OPTIMIZED)
-            'home_bias_min_odds': 1.3,       # Don't apply below this
-            'home_bias_max_odds': 2.5,       # Keep original range
-            'home_bias_factor': 0.868,       # Full dataset optimized: Fine-tuned
-            
-            # Streak adjustments (FULL DATASET OPTIMIZED: EVEN BIGGER STREAKS!)
-            'winning_streak_boost': 2.898,   # FULL DATASET OPTIMIZED: Massive winning streak boost!
-            'losing_streak_penalty': 0.85,   # Keep penalty same
-            'streak_length': 3,              # Keep same minimum
-            
-            # Form boosts
-            'home_form_boost': 1.1,          # Slight home advantage 
-            'away_form_boost': 1.1,          # Equal away boost
-            'strong_form_threshold': 0.7,    # Threshold for "strong" form
-            
-            # NEW: Enhanced opponent analysis weights (optimizable)
-            'base_form_weight': 0.4,         # Traditional form weight in enhanced score
-            'opponent_pattern_weight': 0.25, # Opponent patterns weight
-            'head_to_head_weight': 0.15,     # Head-to-head history weight
-            'tendency_weight': 0.1,          # Recent tendencies weight
-            'contextual_weight': 0.1,        # Contextual form weight
-            
-            # NEW: Enhanced consistency weights (optimizable)
-            'consistency_base_weight': 0.5,  # Base consistency weight
-            'consistency_h2h_weight': 0.3,   # H2H consistency weight
-            'consistency_opponent_weight': 0.2, # Opponent pattern consistency weight
-            
-            # NEW: Form confidence sensitivity (optimizable)
-            'form_sensitivity': 0.4,         # Form difference sensitivity (was 0.3)
-            'draw_sensitivity': 0.25,        # Draw likelihood sensitivity
-            
-            # 🆕 NEW: ODDS DIFFERENCE ANALYSIS PARAMETERS (optimizable)
-            'odds_diff_weight': 0.15,        # Weight for odds difference analysis in confidence
-            'equal_match_boost': 1.2,        # Boost for teams that perform well in equal matches
-            'favorite_performance_boost': 1.1, # Boost for teams that perform well as favorites
-            'underdog_performance_boost': 1.3, # Boost for teams that perform well as underdogs
-            'odds_diff_threshold_tight': 0.3,  # Threshold for "tight" odds differences
-            'odds_diff_threshold_moderate': 0.7, # Threshold for "moderate" odds differences  
-            'odds_diff_sensitivity': 0.5,    # Sensitivity to odds difference patterns
-            'odds_diff_window': 8,           # Number of historical matches to analyze for odds patterns
-            }
+            self.params = get_default_parameters()
         
         # Enhanced data structures for deep form analysis
         self.team_profiles = {}
