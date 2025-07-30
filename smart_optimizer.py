@@ -19,6 +19,8 @@ from parameter_bounds import get_parameter_bounds, get_default_parameters
 
 class SmartOptimizer:
     def __init__(self):
+        print("🚀 OPTIMIZED SMART OPTIMIZER - Creating shared resources...")
+        
         # Load shared parameter bounds
         self.param_bounds = get_parameter_bounds()
         
@@ -69,9 +71,13 @@ class SmartOptimizer:
         self.win_rate_weight = 0.3  # Weight for win frequency (weeks with 12+ correct)
         
         self.best_winnings = 0  # Starting winnings - will find the actual best through optimization
+        # Load test files for optimization
         self.test_files = []
         self.load_test_files()
         
+        # Note: We create clean betting systems for each evaluation to prevent data leakage
+        # Each test file is excluded from training when being evaluated against
+
     def load_test_files(self):
         """Load ALL test files with complete data for accurate optimization"""
         self.test_files = load_all_complete_test_files()
@@ -106,14 +112,11 @@ class SmartOptimizer:
         return True
     
     def evaluate_parameters(self, params):
-        """Evaluate a parameter set with multi-objective scoring: winnings + win rate + weekly weight capping"""
+        """Evaluate a parameter set with multi-objective scoring: winnings + win rate + weekly weight capping (OPTIMIZED)"""
         try:
             # Validate all weights (including new enhanced parameters)
             if not self.validate_all_weights(params):
                 return -10000  # Invalid weight combination
-            
-            system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)
-            system.params.update(params)
             
             total_winnings = 0
             total_cost = 0
@@ -131,7 +134,15 @@ class SmartOptimizer:
                 if not result or not odds:
                     continue
                 
-                patterns = system.generate_optimized_patterns(odds, teams)
+                # 🚨 CRITICAL FIX: Create clean system excluding current test file from initialization
+                clean_system = EnhancedSuperOptimizedBettingSystem(
+                    random_seed=42, 
+                    verbose=False, 
+                    exclude_file=filename
+                )
+                clean_system.params.update(params)
+                
+                patterns = clean_system.generate_optimized_patterns(odds, teams)
                 total_weeks += 1
                 
                 # Track best performance for this week
@@ -200,7 +211,77 @@ class SmartOptimizer:
         except Exception as e:
             print(f"Error evaluating parameters: {e}")
             return -10000
-    
+
+    def get_detailed_metrics(self, params):
+        """Get detailed metrics for a parameter set: winnings, win rate, etc."""
+        try:
+            # Validate all weights (including new enhanced parameters)
+            if not self.validate_all_weights(params):
+                return None
+            
+            total_winnings = 0
+            total_cost = 0
+            weeks_with_wins = 0
+            total_weeks = 0
+            
+            for test_data in self.test_files:
+                filename = test_data['filename']
+                odds = test_data['odds']
+                teams = test_data['teams']
+                result = test_data['result']
+                penge_values = test_data['penge']
+                
+                if not result or not odds:
+                    continue
+                
+                # 🚨 CRITICAL FIX: Create clean system excluding current test file from initialization
+                clean_system = EnhancedSuperOptimizedBettingSystem(
+                    random_seed=42, 
+                    verbose=False, 
+                    exclude_file=filename
+                )
+                clean_system.params.update(params)
+                
+                patterns = clean_system.generate_optimized_patterns(odds, teams)
+                total_weeks += 1
+                
+                # Track best performance for this week
+                week_best_correct = 0
+                
+                for pattern in patterns:
+                    winnings = calculate_winnings(pattern, result, penge_values)
+                    total_winnings += winnings
+                    total_cost += 1
+                    
+                    # Count correct predictions for this pattern
+                    correct_count = sum(1 for pred, actual in zip(pattern, result) if pred == actual)
+                    week_best_correct = max(week_best_correct, correct_count)
+                
+                # Count this week as a win if best pattern got 12+ correct
+                if week_best_correct >= 12:
+                    weeks_with_wins += 1
+            
+            if total_cost == 0 or total_weeks == 0:
+                return None
+            
+            # Calculate all metrics
+            net_profit = total_winnings - total_cost
+            win_rate = weeks_with_wins / total_weeks
+            roi = (net_profit / total_cost) * 100 if total_cost > 0 else 0
+            
+            return {
+                'total_winnings': total_winnings,
+                'total_cost': total_cost,
+                'net_profit': net_profit,
+                'win_rate': win_rate,
+                'weeks_with_wins': weeks_with_wins,
+                'total_weeks': total_weeks,
+                'roi': roi
+            }
+            
+        except Exception as e:
+            return None
+
     def random_neighbor(self, params, step_size=0.15, iteration=0):
         """Generate a random neighbor of current parameters with AGGRESSIVE variation"""
         new_params = params.copy()
@@ -249,78 +330,14 @@ class SmartOptimizer:
         random.setstate(temp_state)
         
         return new_params
-    
-    def get_detailed_metrics(self, params):
-        """Get detailed metrics for a parameter set: winnings, win rate, etc."""
-        try:
-            # Validate all weights (including new enhanced parameters)
-            if not self.validate_all_weights(params):
-                return None
-            
-            system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)
-            system.params.update(params)
-            
-            total_winnings = 0
-            total_cost = 0
-            weeks_with_wins = 0
-            total_weeks = 0
-            
-            for test_data in self.test_files:
-                filename = test_data['filename']
-                odds = test_data['odds']
-                teams = test_data['teams']
-                result = test_data['result']
-                penge_values = test_data['penge']
-                
-                if not result or not odds:
-                    continue
-                
-                patterns = system.generate_optimized_patterns(odds, teams)
-                total_weeks += 1
-                
-                # Track best performance for this week
-                week_best_correct = 0
-                
-                for pattern in patterns:
-                    winnings = calculate_winnings(pattern, result, penge_values)
-                    total_winnings += winnings
-                    total_cost += 1
-                    
-                    # Count correct predictions for this pattern
-                    correct_count = sum(1 for pred, actual in zip(pattern, result) if pred == actual)
-                    week_best_correct = max(week_best_correct, correct_count)
-                
-                # Count this week as a win if best pattern got 12+ correct
-                if week_best_correct >= 12:
-                    weeks_with_wins += 1
-            
-            if total_cost == 0 or total_weeks == 0:
-                return None
-            
-            # Calculate all metrics
-            net_profit = total_winnings - total_cost
-            win_rate = weeks_with_wins / total_weeks
-            roi = (net_profit / total_cost) * 100 if total_cost > 0 else 0
-            
-            return {
-                'total_winnings': total_winnings,
-                'total_cost': total_cost,
-                'net_profit': net_profit,
-                'win_rate': win_rate,
-                'weeks_with_wins': weeks_with_wins,
-                'total_weeks': total_weeks,
-                'roi': roi
-            }
-            
-        except Exception as e:
-            return None
-    
+
     def hill_climbing_optimization(self, max_iterations=1000, max_time_minutes=15):
-        """Hill climbing optimization with time limit"""
-        print(f"🚀 SMART OPTIMIZATION")
+        """Hill climbing optimization with time limit using clean systems for data leakage protection"""
+        print(f"🚀 OPTIMIZED SMART OPTIMIZATION")
         print(f"   Max iterations: {max_iterations:,}")
         print(f"   Max time: {max_time_minutes} minutes")
-        print(f"   📊 Using {len(self.test_files)} complete data files")
+        print(f"   📊 Using {len(self.test_files)} cached test files")
+        print(f"   🛡️ DATA LEAKAGE PROTECTION: Clean systems for each evaluation")
         print("=" * 60)
         
         current_params = self.best_params.copy()
@@ -387,7 +404,7 @@ class SmartOptimizer:
             print(f"   📊 No improvements found - current parameters may already be optimal")
         
         return current_params, current_winnings
-    
+
     def _worker_hill_climbing(self, worker_id, start_params, iterations_per_worker, max_time_seconds, progress_queue, result_queue):
         """Worker function for parallel hill climbing optimization"""
         # Each worker gets its own random seed based on worker_id to ensure reproducibility [[memory:4430342]]
@@ -448,7 +465,7 @@ class SmartOptimizer:
                     best_winnings = current_winnings
             
             # Report progress every 500 iterations
-            if (iteration + 1) % 500 == 0:
+            if (iteration + 1) % 10 == 0:
                 progress_queue.put({
                     'worker_id': worker_id,
                     'iteration': iteration + 1,
@@ -467,16 +484,13 @@ class SmartOptimizer:
             'total_iterations': iteration + 1,
             'elapsed_time': time.time() - start_time
         })
-    
+
     def _evaluate_parameters_worker(self, params, test_files):
         """Worker-specific parameter evaluation function with multi-objective scoring + weekly weight capping"""
         try:
             # Validate all weights (including new enhanced parameters)
             if not self.validate_all_weights(params):
                 return -10000  # Invalid weight combination
-            
-            system = EnhancedSuperOptimizedBettingSystem(random_seed=42, verbose=False)
-            system.params.update(params)
             
             total_winnings = 0
             total_cost = 0
@@ -493,6 +507,14 @@ class SmartOptimizer:
                 
                 if not result or not odds:
                     continue
+                
+                # 🚨 CRITICAL FIX: Create clean system excluding current test file from initialization
+                system = EnhancedSuperOptimizedBettingSystem(
+                    random_seed=42, 
+                    verbose=False, 
+                    exclude_file=filename
+                )
+                system.params.update(params)
                 
                 patterns = system.generate_optimized_patterns(odds, teams)
                 total_weeks += 1
@@ -562,7 +584,7 @@ class SmartOptimizer:
             
         except Exception as e:
             return -10000
-    
+
     def parallel_hill_climbing_optimization(self, max_iterations=10000, max_time_minutes=60, num_processes=None):
         """Parallel hill climbing optimization using multiple processes"""
         if num_processes is None:
@@ -573,6 +595,7 @@ class SmartOptimizer:
         print(f"   Max time: {max_time_minutes} minutes")
         print(f"   Processes: {num_processes}")
         print(f"   📊 Using {len(self.test_files)} complete data files")
+        print(f"   🛡️ DATA LEAKAGE PROTECTION: Clean systems for each evaluation")
         print("=" * 60)
         
         # Calculate iterations per worker
@@ -762,7 +785,7 @@ class SmartOptimizer:
             print(f"   📊 No improvements found - current parameters may already be optimal")
         
         return best_params, best_winnings
-    
+
     def save_parameters_to_file(self, params, winnings, improvements, metrics=None):
         """Save optimized parameters to a JSON file with detailed metrics"""
         import datetime
@@ -806,7 +829,7 @@ class SmartOptimizer:
             
         except Exception as e:
             print(f"   ❌ Error saving parameters: {e}")
-    
+
     def quick_test_current(self):
         """Quick test of current best parameters with detailed metrics"""
         print("🔍 Testing current parameters...")
@@ -848,10 +871,41 @@ class SmartOptimizer:
             
         except Exception as e:
             print(f"   ❌ Error loading optimized parameters: {e}")
-            return None
+            return None 
 
 
 def main():
+    import sys
+    
+    # Check if running non-interactively (no arguments = auto mode)
+    if len(sys.argv) == 1:
+        print("🚀 RUNNING OPTIMIZED SMART OPTIMIZER IN AUTO MODE")
+        print("   Use: python3 smart_optimizer.py --interactive for menu options")
+        print("=" * 60)
+        
+        optimizer = SmartOptimizer()
+        
+        # Quick test current system
+        current_score = optimizer.quick_test_current()
+        print(f"Current parameters Composite Score: {current_score:+.1f}")
+        
+        # Run optimized single-threaded optimization with reasonable defaults
+        print(f"\n🎯 Running single-threaded optimization...")
+        print(f"   Max iterations: 1,000")
+        print(f"   Max time: 10 minutes")
+        print(f"   Focus: {optimizer.winnings_weight:.1%} winnings, {optimizer.win_rate_weight:.1%} win rate")
+        
+        best_params = optimizer.hill_climbing_optimization(max_iterations=1000, max_time_minutes=10)
+        return
+    
+    # Check for interactive flag
+    if '--interactive' not in sys.argv:
+        print("❌ Unknown arguments. Use:")
+        print("   python3 smart_optimizer.py           # Auto mode")
+        print("   python3 smart_optimizer.py --interactive  # Interactive mode")
+        return
+    
+    # Interactive mode
     optimizer = SmartOptimizer()
     
     print("SMART OPTIMIZER - MULTI-OBJECTIVE")

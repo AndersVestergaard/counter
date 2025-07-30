@@ -88,10 +88,11 @@ class EnhancedSuperOptimizedBettingSystem:
                 print(f"   ❌ Error loading optimized parameters: {e}")
             return None
 
-    def __init__(self, random_seed=42, verbose=True):
+    def __init__(self, random_seed=42, verbose=True, exclude_file=None):
         """Initialize with enhanced form analysis and odds difference tracking"""
         self.random_seed = random_seed
         self.verbose = verbose
+        self.exclude_file = exclude_file  # File to exclude from historical training
         random.seed(random_seed)
         
         # Try to load optimized parameters from file
@@ -165,7 +166,23 @@ class EnhancedSuperOptimizedBettingSystem:
         files = [f for f in os.listdir(data_dir) if f.endswith('.json')]
         files.sort()  # Process chronologically
         
+        # Extract exclude filename for comparison
+        exclude_filename = None
+        if self.exclude_file:
+            exclude_filename = os.path.basename(self.exclude_file)
+        
+        # Filter files
+        filtered_files = []
         for filename in files:
+            # Skip the specific file we're excluding (data leakage prevention)
+            if exclude_filename and filename == exclude_filename:
+                if self.verbose:
+                    print(f"   🚫 Excluding prediction target from training: {filename}")
+                continue
+                            
+            filtered_files.append(filename)
+        
+        for filename in filtered_files:
             filepath = os.path.join(data_dir, filename)
             try:
                 with open(filepath, 'r', encoding='utf-8') as f:
@@ -911,42 +928,70 @@ class EnhancedSuperOptimizedBettingSystem:
                         count += 1
         return count
 
-    def generate_optimized_patterns(self, odds, teams):
+    def get_filtered_historical_data(self, exclude_file=None):
+        """Get historical data excluding a specific file (for preventing data leakage)"""
+        if not exclude_file:
+            return self.historical_matches
+        
+        # Extract just the filename without path for comparison
+        exclude_filename = os.path.basename(exclude_file) if exclude_file else None
+        
+        filtered_matches = []
+        for match in self.historical_matches:
+            match_filename = os.path.basename(match['filename'])
+            if match_filename != exclude_filename:
+                filtered_matches.append(match)
+        
+        return filtered_matches
+
+    def generate_optimized_patterns(self, odds, teams, exclude_file=None):
         """Generate optimized betting patterns with diversity to avoid overfitting"""
         if len(odds) != 39 or len(teams) != 13:
             return []
         
-        patterns = []
+        # Temporarily filter historical data if exclude_file is specified
+        original_matches = None
+        if exclude_file:
+            original_matches = self.historical_matches
+            self.historical_matches = self.get_filtered_historical_data(exclude_file)
         
-        # Calculate confidence for each match
-        match_confidences = []
-        for i in range(13):
-            confidence = self.calculate_match_confidence(teams, odds, i)
-            match_confidences.append(confidence)
-        
-        # Generate base patterns using different strategies with diversity
-        strategies = [
-            self.generate_high_confidence_patterns,
-            self.generate_form_based_patterns,
-            self.generate_odds_based_patterns,
-            self.generate_balanced_patterns
-        ]
-        
-        patterns_per_strategy = self.params['default_patterns'] // len(strategies)
-        
-        for strategy in strategies:
-            strategy_patterns = strategy(match_confidences, patterns_per_strategy)
-            for pattern in strategy_patterns:
-                if pattern not in patterns:  # Deduplicate across all strategies
+        try:
+            patterns = []
+            
+            # Calculate confidence for each match
+            match_confidences = []
+            for i in range(13):
+                confidence = self.calculate_match_confidence(teams, odds, i)
+                match_confidences.append(confidence)
+            
+            # Generate base patterns using different strategies with diversity
+            strategies = [
+                self.generate_high_confidence_patterns,
+                self.generate_form_based_patterns,
+                self.generate_odds_based_patterns,
+                self.generate_balanced_patterns
+            ]
+            
+            patterns_per_strategy = self.params['default_patterns'] // len(strategies)
+            
+            for strategy in strategies:
+                strategy_patterns = strategy(match_confidences, patterns_per_strategy)
+                for pattern in strategy_patterns:
+                    if pattern not in patterns:  # Deduplicate across all strategies
+                        patterns.append(pattern)
+            
+            # Fill remaining slots with diverse confident patterns
+            while len(patterns) < self.params['default_patterns']:
+                pattern = self.generate_confident_pattern(match_confidences)
+                if pattern not in patterns:
                     patterns.append(pattern)
+            
+            return patterns[:self.params['default_patterns']]
         
-        # Fill remaining slots with diverse confident patterns
-        while len(patterns) < self.params['default_patterns']:
-            pattern = self.generate_confident_pattern(match_confidences)
-            if pattern not in patterns:
-                patterns.append(pattern)
-        
-        return patterns[:self.params['default_patterns']]
+        finally:
+            # Restore original historical data
+            if original_matches is not None:
+                self.historical_matches = original_matches
 
 
 
@@ -1088,8 +1133,19 @@ class EnhancedSuperOptimizedBettingSystem:
         if len(teams) != 13:
             return {'error': f'Expected 13 teams, got {len(teams)}'}
         
-        # Generate enhanced optimized patterns
-        patterns = self.generate_optimized_patterns(odds, teams)
+        # 🚨 CRITICAL FIX: Create clean system that excludes target file from initialization
+        # This prevents data leakage where the system trains on the file it's predicting
+        clean_system = EnhancedSuperOptimizedBettingSystem(
+            random_seed=self.random_seed, 
+            verbose=False,  # Reduce noise
+            exclude_file=filename
+        )
+        
+        # Copy optimized parameters to the clean system
+        clean_system.params = self.params.copy()
+        
+        # Generate patterns using the clean system (without data leakage)
+        patterns = clean_system.generate_optimized_patterns(odds, teams)
         
         return {
             'filename': filename,
@@ -1101,6 +1157,8 @@ class EnhancedSuperOptimizedBettingSystem:
             'random_seed': self.random_seed,
             'expected_roi': '+1724.3%',
             'improvement_over_previous': '+1649.7 percentage points',
+            'data_leakage_prevented': True,  # NEW: Confirm fix is applied
+            'excluded_from_training': filename,  # NEW: Show what was excluded
             'enhanced_features': [
                 'Opponent pattern analysis',
                 'Head-to-head historical records',
@@ -1109,7 +1167,8 @@ class EnhancedSuperOptimizedBettingSystem:
                 'Deep opponent awareness',
                 '🆕 Odds difference analysis',
                 '🆕 Equal match performance tracking',
-                '🆕 Favorite/underdog pattern analysis'
+                '🆕 Favorite/underdog pattern analysis',
+                '🛡️ Data leakage prevention'
             ]
         }
 

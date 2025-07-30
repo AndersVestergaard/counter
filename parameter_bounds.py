@@ -14,7 +14,7 @@ def get_parameter_bounds():
         'form_weight': (0.001, 2.0),
         
         # Pattern generation
-        'default_patterns': (25, 200),  # Number of bets to make
+        'default_patterns': (75, 75),  # Number of bets to make
         
         # Bias parameters
         'home_bias_max_odds': (0.5, 10.0),
