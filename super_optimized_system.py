@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ENHANCED SUPER OPTIMIZED BETTING SYSTEM: +1724.3% ROI + Advanced Opponent Analysis + Odds Difference Analysis
-Standalone implementation with deep form analysis, opponent patterns, head-to-head history, and odds difference patterns
+ENHANCED SUPER OPTIMIZED BETTING SYSTEM: +1724.3% ROI + Advanced Opponent Analysis + Odds Difference Analysis + Odds Bracket Analysis
+Standalone implementation with deep form analysis, opponent patterns, head-to-head history, odds difference patterns, and odds bracket patterns
 
 NEW FEATURES:
 - Opponent form analysis: Deep analysis of what opponents tend to do
@@ -13,6 +13,7 @@ NEW FEATURES:
 - 🆕 ODDS DIFFERENCE ANALYSIS: Track team performance based on historical odds differences
 - 🆕 EQUAL MATCH PERFORMANCE: Analyze how teams perform when equally matched vs favorites/underdogs
 - 🆕 ODDS DIFFERENCE SENSITIVITY: Optimizable parameters for odds difference patterns
+- 🆕 ODDS BRACKET ANALYSIS: Track historical outcomes for specific odds triplet patterns (e.g., [2.33, 2.33, 2.33])
 
 USAGE: python3 super_optimized_system.py filename.json
 """
@@ -121,19 +122,23 @@ class EnhancedSuperOptimizedBettingSystem:
         self.odds_difference_patterns = {}  # Track performance based on odds differences
         self.team_odds_history = {}         # Track historical odds for each team
         
+        # 🆕 NEW: ODDS BRACKET TRACKING
+        self.odds_bracket_patterns = {}     # Track performance based on odds triplet patterns
+        
         self.historical_matches = []
         
         # Load historical data for enhanced analysis
         self.load_historical_data_enhanced()
         
         if verbose:
-            print("Loading enhanced historical data with deep opponent analysis and odds difference tracking...")
+            print("Loading enhanced historical data with deep opponent analysis, odds difference tracking, and odds bracket analysis...")
             print(f"   - Loaded {len(self.historical_matches)} historical matches")
             print(f"   - Built profiles for {len(self.team_profiles)} teams")
             print(f"   - Tracked recent form for {len(self.team_form)} teams")
             print(f"   - Analyzed opponent patterns for {len(self.opponent_patterns)} teams")
             print(f"   - Built head-to-head records for {len(self.head_to_head)} matchups")
             print(f"   - 🆕 Tracked odds difference patterns for {len(self.odds_difference_patterns)} teams")
+            print(f"   - 🆕 Tracked odds bracket patterns for {len(self.odds_bracket_patterns)} brackets")
             print(f"   - Found {self.count_sweet_spot_matches()} sweet spot matches")
             
             if self.using_optimized:
@@ -154,7 +159,8 @@ class EnhancedSuperOptimizedBettingSystem:
             print(f"   Winning streak boost: {self.params['winning_streak_boost']:.3f}")
             print(f"   High confidence: {self.params['high_confidence_threshold']}")
             print(f"   🆕 Odds difference weight: {self.params.get('odds_diff_weight', 0.15):.3f}")
-            print("   🆕 ENHANCED: Opponent patterns, head-to-head, contextual form, odds difference analysis")
+            print(f"   🆕 Odds bracket weight: {self.params.get('odds_bracket_weight', 0.10):.3f}")
+            print("   🆕 ENHANCED: Opponent patterns, head-to-head, contextual form, odds difference analysis, odds bracket patterns")
             print("=" * 70)
 
     def load_historical_data_enhanced(self):
@@ -237,6 +243,9 @@ class EnhancedSuperOptimizedBettingSystem:
                 self.update_odds_difference_patterns(away_team, home_team, match_result, False, match_odds)
                 self.update_team_odds_history(home_team, away_team, match_odds, True)
                 self.update_team_odds_history(away_team, home_team, match_odds, False)
+                
+                # 🆕 NEW: ODDS BRACKET ANALYSIS - Track odds triplet patterns
+                self.update_odds_bracket_patterns(match_odds, match_result, i)
 
     # NEW: Enhanced opponent analysis methods
     def update_opponent_patterns(self, team, opponent, result, is_home, odds):
@@ -386,6 +395,250 @@ class EnhancedSuperOptimizedBettingSystem:
                 patterns['heavy_favorite'].append(team_result)
             else:  # Team heavily underdog
                 patterns['heavy_underdog'].append(team_result)
+
+    # 🆕 NEW: ODDS BRACKET ANALYSIS - Track odds triplet patterns and outcomes
+    def update_odds_bracket_patterns(self, odds_triplet, result, match_index):
+        """Track historical outcomes for different odds bracket patterns"""
+        if not hasattr(self, 'odds_bracket_patterns'):
+            self.odds_bracket_patterns = {}
+        
+        # Categorize the odds triplet into a bracket
+        bracket = self.categorize_odds_triplet(odds_triplet)
+        
+        if bracket not in self.odds_bracket_patterns:
+            window_size = int(self.params.get('odds_bracket_window', 50))  # Ensure integer
+            self.odds_bracket_patterns[bracket] = {
+                'outcomes': deque(maxlen=window_size),  # Store more samples
+                'total_count': 0,
+                'home_wins': 0,
+                'draws': 0,
+                'away_wins': 0
+            }
+        
+        pattern = self.odds_bracket_patterns[bracket]
+        
+        # Store the outcome
+        pattern['outcomes'].append(result)
+        pattern['total_count'] += 1
+        
+        # Update counters
+        if result == '0':
+            pattern['home_wins'] += 1
+        elif result == '1':
+            pattern['draws'] += 1
+        else:  # result == '2'
+            pattern['away_wins'] += 1
+
+    def categorize_odds_triplet(self, odds_triplet):
+        """ENHANCED: More precise odds triplet categorization with better pattern detection"""
+        if len(odds_triplet) != 3:
+            return "invalid"
+        
+        home_odds, draw_odds, away_odds = odds_triplet
+        
+        # Handle invalid odds
+        if any(odd <= 0 for odd in odds_triplet):
+            return "invalid"
+        
+        # Calculate key metrics
+        sorted_odds = sorted(odds_triplet)
+        min_odds, mid_odds, max_odds = sorted_odds
+        
+        spread = max_odds - min_odds
+        try:
+            import statistics
+            odds_std = statistics.stdev(odds_triplet)  # Standard deviation for variation
+        except:
+            odds_std = spread / 2  # Fallback if statistics module unavailable
+        
+        # Identify favorite
+        if home_odds == min_odds:
+            favorite = "home"
+        elif away_odds == min_odds:
+            favorite = "away"
+        else:
+            favorite = "draw"
+        
+        # Calculate ratios
+        min_to_max_ratio = min_odds / max_odds if max_odds > 0 else 0
+        draw_position = (draw_odds - min_odds) / (max_odds - min_odds) if spread > 0 else 0.5
+        
+        # 🎯 ENHANCED CATEGORIZATION RULES
+        
+        # 1. EXTREME FAVORITES (very low odds)
+        if min_odds < 1.3:
+            if spread > 8.0:
+                return f"extreme_{favorite}_massive_spread"
+            elif spread > 4.0:
+                return f"extreme_{favorite}_large_spread"
+            else:
+                return f"extreme_{favorite}_tight"
+        
+        # 2. VERY EQUAL ODDS (all close)
+        elif odds_std < 0.3:  # Very low standard deviation
+            return f"very_equal_{favorite}_minimal_diff"
+        elif odds_std < 0.6:  # Low standard deviation
+            return f"equal_{favorite}_small_diff"
+        
+        # 3. STRONG FAVORITES (clear but not extreme)
+        elif min_odds < 1.8:
+            if draw_position < 0.3:  # Draw close to favorite
+                return f"strong_{favorite}_draw_close"
+            elif draw_position > 0.7:  # Draw close to underdog
+                return f"strong_{favorite}_draw_far"
+            else:
+                return f"strong_{favorite}_draw_middle"
+        
+        # 4. MODERATE FAVORITES
+        elif min_odds < 2.5:
+            if min_to_max_ratio > 0.6:  # Relatively close odds
+                return f"moderate_{favorite}_competitive"
+            else:
+                return f"moderate_{favorite}_clear"
+        
+        # 5. CLOSE CONTESTS (no clear favorite)
+        elif min_odds < 3.5 and spread < 2.0:
+            if abs(home_odds - away_odds) < 0.3:  # Very close home/away
+                return f"tight_contest_even_draw_{int(draw_odds)}"
+            else:
+                return f"close_contest_slight_{favorite}"
+        
+        # 6. WIDE SPREAD (chaotic odds)
+        elif spread > 4.0:
+            return f"wide_spread_{favorite}_chaotic"
+        
+        # 7. DEFAULT CATEGORIES
+        else:
+            return f"standard_{favorite}_normal"
+
+    def get_odds_bracket_confidence(self, odds_triplet):
+        """Get confidence predictions based on historical odds bracket performance"""
+        if not hasattr(self, 'odds_bracket_patterns'):
+            return {'0': 0.33, '1': 0.33, '2': 0.34}  # Default equal probabilities
+        
+        bracket = self.categorize_odds_triplet(odds_triplet)
+        
+        if bracket not in self.odds_bracket_patterns:
+            return {'0': 0.33, '1': 0.33, '2': 0.34}  # Default if no history
+        
+        pattern = self.odds_bracket_patterns[bracket]
+        outcomes = list(pattern['outcomes'])
+        
+        min_samples = int(self.params.get('min_bracket_samples', 3))
+        if len(outcomes) < min_samples:
+            return {'0': 0.33, '1': 0.33, '2': 0.34}  # Need minimum samples
+        
+        # Calculate historical probabilities
+        total = len(outcomes)
+        home_rate = outcomes.count('0') / total
+        draw_rate = outcomes.count('1') / total
+        away_rate = outcomes.count('2') / total
+        
+        # 🚀 ENHANCED CONFIDENCE CALCULATION
+        
+        # 1. Dynamic sample confidence (better scaling)
+        ideal_samples = int(self.params.get('ideal_bracket_samples', 30))
+        sample_confidence = min(1.0, (total / ideal_samples) ** 0.7)  # Smoother scaling
+        
+        # 2. Pattern strength bonus
+        max_rate = max(home_rate, draw_rate, away_rate)
+        pattern_strength = max_rate - 0.33  # How much above random
+        
+        confidence_boost = 1.0
+        if pattern_strength > 0.2:  # Strong pattern (>53%)
+            confidence_boost = self.params.get('bracket_confidence_boost', 1.5)
+        elif pattern_strength > 0.1:  # Moderate pattern (>43%)
+            confidence_boost = 1.2
+        
+        # 3. Blend with defaults (less blending for strong patterns)
+        default_weight = (1.0 - sample_confidence) * (1.0 / confidence_boost)
+        historical_weight = 1.0 - default_weight
+        
+        confidence = {
+            '0': (home_rate * historical_weight) + (0.33 * default_weight),
+            '1': (draw_rate * historical_weight) + (0.33 * default_weight),
+            '2': (away_rate * historical_weight) + (0.34 * default_weight)
+        }
+        
+        # 4. Apply confidence boost to strongest outcome
+        max_outcome = max(confidence.keys(), key=lambda k: confidence[k])
+        confidence[max_outcome] *= confidence_boost
+        
+        # 5. Renormalize
+        total_conf = sum(confidence.values())
+        if total_conf > 0:
+            for outcome in confidence:
+                confidence[outcome] /= total_conf
+        
+        return confidence
+
+    def get_dynamic_bracket_weight(self, odds_triplet):
+        """Calculate dynamic weight based on data quality for this bracket"""
+        bracket = self.categorize_odds_triplet(odds_triplet)
+        
+        if not self.params.get('bracket_dynamic_weight', True):
+            return self.params.get('odds_bracket_weight', 0.20)
+        
+        if bracket == "invalid" or bracket not in self.odds_bracket_patterns:
+            return 0.05  # Very low weight for unknown patterns
+        
+        pattern = self.odds_bracket_patterns[bracket]
+        outcomes = list(pattern['outcomes'])
+        total = len(outcomes)
+        
+        # Base weight
+        base_weight = self.params.get('odds_bracket_weight', 0.20)
+        
+        # Adjust based on sample size
+        min_samples = int(self.params.get('min_bracket_samples', 5))
+        ideal_samples = int(self.params.get('ideal_bracket_samples', 30))
+        
+        if total < min_samples:
+            return 0.02  # Almost no weight
+        elif total >= ideal_samples:
+            return base_weight * 1.5  # Boost weight for rich data
+        else:
+            # Linear scaling between min and ideal
+            scaling = total / ideal_samples
+            return base_weight * (0.5 + 0.5 * scaling)
+
+    def get_odds_bracket_summary(self, bracket_name=None):
+        """Get summary of odds bracket patterns"""
+        if not hasattr(self, 'odds_bracket_patterns'):
+            return {}
+        
+        if bracket_name:
+            if bracket_name in self.odds_bracket_patterns:
+                pattern = self.odds_bracket_patterns[bracket_name]
+                outcomes = list(pattern['outcomes'])
+                total = len(outcomes)
+                if total > 0:
+                    return {
+                        'bracket': bracket_name,
+                        'samples': total,
+                        'home_rate': outcomes.count('0') / total,
+                        'draw_rate': outcomes.count('1') / total,
+                        'away_rate': outcomes.count('2') / total,
+                        'most_likely': max(['0', '1', '2'], key=lambda x: outcomes.count(x))
+                    }
+            return {}
+        
+        # Return summary of all brackets
+        summary = {}
+        for bracket, pattern in self.odds_bracket_patterns.items():
+            outcomes = list(pattern['outcomes'])
+            total = len(outcomes)
+            min_samples = int(self.params.get('min_bracket_samples', 3))
+            if total >= min_samples:
+                summary[bracket] = {
+                    'samples': total,
+                    'home_rate': outcomes.count('0') / total,
+                    'draw_rate': outcomes.count('1') / total,
+                    'away_rate': outcomes.count('2') / total,
+                    'most_likely': max(['0', '1', '2'], key=lambda x: outcomes.count(x))
+                }
+        
+        return summary
 
     def update_team_odds_history(self, team, opponent, odds, is_home):
         """Track historical odds for each team to analyze patterns"""
@@ -751,13 +1004,18 @@ class EnhancedSuperOptimizedBettingSystem:
             for outcome in odds_diff_confidence:
                 odds_diff_confidence[outcome] /= total_odds_diff
         
-        # Combined confidence for each outcome including odds difference analysis
-        odds_diff_weight = self.params.get('odds_diff_weight', 0.15)
+        # 🆕 NEW: ODDS BRACKET ANALYSIS - Historical patterns for similar odds triplets
+        bracket_confidence = self.get_odds_bracket_confidence(match_odds)
         
-        # Adjust other weights to account for odds difference weight
-        adjusted_odds_weight = self.params['odds_weight'] * (1.0 - odds_diff_weight)
-        adjusted_form_weight = self.params['form_weight'] * (1.0 - odds_diff_weight)
-        adjusted_team_weight = self.params['team_weight'] * (1.0 - odds_diff_weight)
+        # 🚀 ENHANCED: Use dynamic bracket weight based on data quality
+        odds_diff_weight = self.params.get('odds_diff_weight', 0.15)
+        bracket_weight = self.get_dynamic_bracket_weight(match_odds)
+        
+        # Adjust other weights to account for odds difference and bracket weights
+        total_new_weight = odds_diff_weight + bracket_weight
+        adjusted_odds_weight = self.params['odds_weight'] * (1.0 - total_new_weight)
+        adjusted_form_weight = self.params['form_weight'] * (1.0 - total_new_weight)
+        adjusted_team_weight = self.params['team_weight'] * (1.0 - total_new_weight)
         
         combined_confidence = {}
         for outcome in ['0', '1', '2']:
@@ -765,7 +1023,8 @@ class EnhancedSuperOptimizedBettingSystem:
                 adjusted_odds_weight * odds_confidence[outcome] +
                 adjusted_form_weight * form_confidence[outcome] +
                 adjusted_team_weight * team_consistency +
-                odds_diff_weight * odds_diff_confidence[outcome]  # 🆕 NEW: Odds difference factor
+                odds_diff_weight * odds_diff_confidence[outcome] +  # 🆕 Odds difference factor
+                bracket_weight * bracket_confidence[outcome]       # 🆕 NEW: Odds bracket factor
             )
         
         # Apply home bias adjustment in specific odds range
@@ -1168,6 +1427,7 @@ class EnhancedSuperOptimizedBettingSystem:
                 '🆕 Odds difference analysis',
                 '🆕 Equal match performance tracking',
                 '🆕 Favorite/underdog pattern analysis',
+                '🆕 Odds bracket pattern analysis',
                 '🛡️ Data leakage prevention'
             ]
         }

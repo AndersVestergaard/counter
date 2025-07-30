@@ -54,6 +54,14 @@ def get_parameter_bounds():
         'odds_diff_threshold_moderate': (0.4, 1.2), # Moderate odds difference threshold
         'odds_diff_sensitivity': (0.2, 1.0),     # Sensitivity to odds patterns
         'odds_diff_window': (4, 15),             # Historical window size
+        
+        # 🆕 NEW: Odds bracket analysis bounds (optimizable ranges)
+        'odds_bracket_weight': (0.05, 0.3),     # Weight for odds bracket analysis
+        'odds_bracket_window': (20, 150),       # Historical window for bracket patterns
+        'min_bracket_samples': (2, 10),         # Minimum samples needed for bracket confidence
+        'ideal_bracket_samples': (10, 50),      # Ideal sample size for full confidence
+        'bracket_confidence_boost': (1.0, 3.0), # Confidence boost for strong patterns
+        'bracket_dynamic_weight': (False, True), # Whether to use dynamic weighting
     }
 
 def get_default_parameters():
@@ -118,4 +126,12 @@ def get_default_parameters():
         'odds_diff_threshold_moderate': 0.7,
         'odds_diff_sensitivity': 0.5,
         'odds_diff_window': 8,
+        
+        # 🆕 NEW: Odds bracket analysis parameters (ENHANCED)
+        'odds_bracket_weight': 0.20,            # DOUBLED weight for higher impact
+        'odds_bracket_window': 100,             # Larger window for more data
+        'min_bracket_samples': 5,               # Higher minimum for reliability
+        'ideal_bracket_samples': 30,            # Higher ideal for confidence
+        'bracket_confidence_boost': 1.5,        # Boost strong patterns
+        'bracket_dynamic_weight': True,         # Adjust weight based on data quality
     } 
